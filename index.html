@@ -220,6 +220,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15
 .plate-row input{width:100%;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font-mono);font-size:13px;font-weight:600;text-transform:uppercase;outline:none;letter-spacing:0.05em}
 .plate-row input:focus{border-color:var(--primary)}
 .plate-row input::placeholder{text-transform:none;font-family:var(--font);font-weight:400;letter-spacing:normal}
+.car-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.car-row input{height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.car-row input:focus{border-color:var(--primary)}
+.loyalty-bar{margin-bottom:10px;background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px}
+.loyalty-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.loyalty-stamps{display:flex;gap:5px;flex-wrap:wrap}
+.stamp{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;flex-shrink:0}
+.stamp.filled{background:var(--primary);border-color:var(--primary)}
+.stamp.free{background:var(--green-bg);border-color:var(--green);animation:pop .3s ease}
+@keyframes pop{0%{transform:scale(0.7)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.loyalty-msg{font-size:12px;font-weight:600;margin-top:7px}
+.loyalty-msg.earned{color:var(--green)}
+.loyalty-msg.progress{color:var(--text3)}
 .discount-row{display:flex;gap:6px;margin-bottom:10px;align-items:center}
 .discount-row input{flex:1;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
 .discount-row input:focus{border-color:var(--primary)}
@@ -677,6 +690,29 @@ const Customers={
   softDelete(id){this.update(id,{deletedAt:DB.now()})},
   incVisit(id,amt){const c=this.byId(id);if(c)this.update(id,{visitCount:c.visitCount+1,totalSpending:c.totalSpending+amt})},
 };
+// ─── LOYALTY ─────────────────────────────────────────────────────
+// Change LOYALTY_THRESHOLD to set how many paid washes = 1 free
+// e.g. 3 = "buy 3 get 1 free"
+const LOYALTY_KEY='cw_loyalty_threshold';
+function getLoyaltyThreshold(){return parseInt(localStorage.getItem(LOYALTY_KEY)||'3');}
+function setLoyaltyThreshold(n){localStorage.setItem(LOYALTY_KEY,String(n));}
+function getLoyaltyStatus(cust){
+  if(!cust)return null;
+  const threshold=getLoyaltyThreshold();
+  const paidWashes=cust.visitCount||0;
+  // loyaltyRedeemed tracks how many free washes already used
+  const redeemed=cust.loyaltyRedeemed||0;
+  const earned=Math.floor(paidWashes/threshold);
+  const available=earned-redeemed;
+  const progress=paidWashes%threshold;
+  return{paidWashes,threshold,earned,redeemed,available,progress,next:threshold-progress};
+}
+function redeemLoyalty(custId){
+  const c=Customers.byId(custId);if(!c)return false;
+  const st=getLoyaltyStatus(c);if(!st||st.available<=0)return false;
+  Customers.update(custId,{loyaltyRedeemed:(c.loyaltyRedeemed||0)+1});
+  return true;
+}
 const Vehicles={
   byCustomer(cid){return DB.get(K.VHCL).filter(v=>v.customerId===cid&&!v.deletedAt)},
   create(d){const v={...d,id:DB.id(),createdAt:DB.now(),updatedAt:DB.now()};DB.set(K.VHCL,[...DB.get(K.VHCL),v]);return v},
@@ -891,7 +927,7 @@ function renderDashboard(){
 // ═══════════════════════════════════════════════════════════════
 // POS
 // ═══════════════════════════════════════════════════════════════
-let posCart=[],posCust=null,posPlate='',posDisc=0,posDiscType='fixed',posPayMethod='cash',posPendingOrder=null;
+let posCart=[],posCust=null,posPlate='',posCarName='',posLoyaltyFree=false,posDisc=0,posDiscType='fixed',posPayMethod='cash',posPendingOrder=null;
 let posSearchOpen=false,posCustQuery='',posCustResults=[];
 
 function renderPOS(){
@@ -921,9 +957,11 @@ function renderPOS(){
         <div class="cart-header"><div class="cart-title">Order — <span id="cart-count">0 items</span></div></div>
         <div class="cart-items" id="cart-items-list"><div class="empty-state" style="padding:40px 20px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="empty-title">Cart is empty</span><span class="empty-sub">Tap a service to add</span></div></div>
         <div class="cart-footer">
-          <div class="plate-row">
-            <input type="text" id="pos-plate" maxlength="12" placeholder="🚗 Number plate  e.g. KL 01 AB 1234" oninput="posPlate=this.value.toUpperCase();this.value=posPlate" style="width:100%;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font-mono);font-size:13px;font-weight:600;text-transform:uppercase;outline:none;letter-spacing:0.04em"/>
+          <div class="car-row">
+            <input type="text" id="pos-plate" maxlength="14" placeholder="KL 01 AB 1234" oninput="posPlate=this.value.toUpperCase();this.value=posPlate" style="font-family:var(--font-mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em"/>
+            <input type="text" id="pos-car-name" maxlength="30" placeholder="Car (e.g. Swift, Innova)"/>
           </div>
+          <div id="pos-loyalty-bar"></div>
           <div class="discount-row">
             <input type="number" id="disc-val" min="0" placeholder="Discount amount" oninput="updateTotals()" style="flex:1;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
             <div class="discount-type"><button id="disc-fixed" class="active" onclick="setDiscType('fixed')">₹</button><button id="disc-pct" onclick="setDiscType('percent')">%</button></div>
@@ -1048,6 +1086,46 @@ function selectPosCust(id){
   if(lbl){lbl.textContent=posCust.name;lbl.style.color='var(--text)'}
   const dd=document.getElementById('cust-dropdown');if(dd)dd.style.display='none';
   posSearchOpen=false;
+  renderLoyaltyBar();
+}
+function renderLoyaltyBar(){
+  const el=document.getElementById('pos-loyalty-bar');
+  if(!el)return;
+  if(!posCust){el.innerHTML='';posLoyaltyFree=false;return;}
+  const st=getLoyaltyStatus(posCust);
+  if(!st){el.innerHTML='';return;}
+  const stamps=[];
+  for(let i=0;i<st.threshold;i++){
+    const done=i<st.progress;
+    stamps.push('<div class="stamp'+(done?' filled':'')+'">'+( done?'✓':'')+'</div>');
+  }
+  const freeAvail=st.available>0;
+  if(freeAvail)stamps.push('<div class="stamp free">🎁</div>');
+  posLoyaltyFree=false;
+  let msg='';
+  if(freeAvail){
+    msg='<div class="loyalty-msg earned">🎉 '+st.available+' FREE wash available! <button onclick="applyLoyaltyFree()" style="margin-left:6px;padding:2px 10px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Apply</button></div>';
+  }else{
+    msg='<div class="loyalty-msg progress">'+st.next+' more wash'+(st.next>1?'es':'')+' for a FREE wash 🎯</div>';
+  }
+  el.innerHTML='<div class="loyalty-bar"><div class="loyalty-title"><span>⭐ Loyalty Card</span><span style="color:var(--text2);font-weight:500;text-transform:none">'+st.paidWashes+' washes total</span></div><div class="loyalty-stamps">'+stamps.join('')+'</div>'+msg+'</div>';
+}
+function applyLoyaltyFree(){
+  if(!posCust||posCart.length===0){toast('Add a service first','error');return;}
+  posLoyaltyFree=true;
+  // Set discount to 100% of cheapest item in cart
+  const minPrice=Math.min(...posCart.map(c=>c.service.price));
+  const discEl=document.getElementById('disc-val');
+  if(discEl)discEl.value=minPrice;
+  posDiscType='fixed';posDisc=minPrice;
+  document.getElementById('disc-fixed')?.classList.add('active');
+  document.getElementById('disc-pct')?.classList.remove('active');
+  updateTotals();
+  // Update loyalty bar
+  const el=document.getElementById('pos-loyalty-bar');
+  if(el){const lb=el.querySelector('.loyalty-bar');if(lb)lb.style.opacity='0.6';}
+  const st=getLoyaltyStatus(posCust);
+  toast('Free wash applied! ('+(st?.available||1)+' available)','success');
 }
 
 function clearPosCust(e){e.stopPropagation();posCust=null;const lbl=document.getElementById('pos-cust-label');if(lbl){lbl.textContent='Walk-in / Select customer';lbl.style.color='var(--text3)'}renderPOS()}
@@ -1094,18 +1172,20 @@ function confirmPayment(){
     if(given<total){toast('Insufficient cash amount','error');return}
   }
   const plate=(document.getElementById('pos-plate')?.value||posPlate||'').trim().toUpperCase();
+  const carName=(document.getElementById('pos-car-name')?.value||posCarName||'').trim();
   const items=posCart.map(ci=>({id:DB.id(),orderId:'',serviceId:ci.service.id,serviceName:ci.service.name,servicePrice:ci.service.price,extras:ci.extras.map(e=>({extraId:e.id,name:e.name,price:e.price})),subtotal:ci.subtotal}));
-  const order=Orders.create({customerId:posCust?.id,status:'waiting',items,subtotal:sub,discount:dv,discountType:posDiscType,total,estimatedMinutes:Math.max(...posCart.map(c=>c.service.duration)),notes:plate||undefined,vehiclePlate:plate||undefined});
+  const order=Orders.create({customerId:posCust?.id,status:'waiting',items,subtotal:sub,discount:dv,discountType:posDiscType,total,estimatedMinutes:Math.max(...posCart.map(c=>c.service.duration)),notes:plate||undefined,vehiclePlate:plate||undefined,carName:carName||undefined});
+  if(posLoyaltyFree&&posCust)redeemLoyalty(posCust.id);
   const payment=Payments.create({orderId:order.id,amount:total,method:posPayMethod,status:'paid',cashGiven:posPayMethod==='cash'?parseFloat(document.getElementById('cash-given').value):undefined,change:posPayMethod==='cash'?Math.max(0,parseFloat(document.getElementById('cash-given').value)-total):undefined});
   if(posCust)Customers.incVisit(posCust.id,total);
   closeModal('pay-modal');
-  const savedCart=[...posCart];const savedCust=posCust;const savedPlate=plate;
-  posCart=[];posCust=null;posPlate='';posDisc=0;
+  const savedCart=[...posCart];const savedCust=posCust;const savedPlate=plate;const savedCarName=carName;
+  posCart=[];posCust=null;posPlate='';posCarName='';posLoyaltyFree=false;posDisc=0;
   renderPOS();
-  showInvoice(order,payment,savedCust,savedCart,sub,da,total,savedPlate);
+  showInvoice(order,payment,savedCust,savedCart,sub,da,total,savedPlate,savedCarName);
 }
 
-function showInvoice(order,payment,cust,cart,sub,discAmt,total,plate){
+function showInvoice(order,payment,cust,cart,sub,discAmt,total,plate,carName){
   const shopName=localStorage.getItem('cw_shop_name')||'CarWash Pro';
   const shopPhone=localStorage.getItem('cw_shop_phone')||'';
   const now=new Date();
@@ -1149,7 +1229,7 @@ function showInvoice(order,payment,cust,cart,sub,discAmt,total,plate){
     +'<div><div class="qnum">#'+order.queueNumber+'</div><div style="text-align:right;font-size:12px;color:#6b7280;margin-top:4px">Queue Number</div></div></div>'
     +'<div class="meta"><div class="meta-box"><div class="meta-lbl">Date</div><div class="meta-val">'+dateStr+'</div><div style="font-size:12px;color:#6b7280;margin-top:2px">'+timeStr+'</div></div>'
     +'<div class="meta-box"><div class="meta-lbl">Customer</div><div class="meta-val">'+(cust?cust.name:'Walk-in')+'</div>'+(cust?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+cust.phone+'</div>':'')+'</div>'
-    +'<div class="meta-box"><div class="meta-lbl">Vehicle Plate</div><div class="meta-val" style="font-family:monospace;letter-spacing:0.05em">'+(plate||'—')+'</div></div></div>'
+    +'<div class="meta-box"><div class="meta-lbl">Vehicle</div><div class="meta-val" style="font-family:monospace;letter-spacing:0.05em">'+(plate||'—')+'</div>'+(carName?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+carName+'</div>':'')+'</div></div>'
     +'<table><thead><tr><th>Service</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+itemRows+'</tbody></table>'
     +'<div class="totals-box">'
     +'<div class="t-row"><span style="color:#6b7280">Subtotal</span><span style="font-family:monospace">'+fmt(sub)+'</span></div>'
@@ -1210,6 +1290,7 @@ function buildOrderCard(o,emps){
   const custLine=cust||plate?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
     ${cust?`<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text2)"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${cust.name}</span>`:''}
     ${plate?`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--amber-bg);color:var(--amber);font-size:11.5px;font-weight:700;font-family:var(--font-mono);padding:2px 8px;border-radius:6px;letter-spacing:0.04em">${plate}</span>`:''}
+    ${o.carName?`<span style="display:inline-flex;align-items:center;gap:3px;background:var(--surface2);color:var(--text2);font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:6px">${o.carName}</span>`:''}
   </div>`:''
   return`<div class="order-card">
     <div class="order-num status-${o.status}">#${o.queueNumber}</div>
@@ -1381,6 +1462,23 @@ function selectCustCRM(id){
   document.querySelectorAll('.crm-item').forEach(e=>e.classList.toggle('active',e.onclick?.toString().includes(id)));
 }
 
+function buildLoyaltyCardHTML(c){
+  const st=getLoyaltyStatus(c);
+  if(!st)return '';
+  const stamps=[];
+  for(let i=0;i<st.threshold;i++){
+    const done=i<st.progress;
+    stamps.push('<div class="stamp'+(done?' filled':'')+'">'+( done?'✓':'')+'</div>');
+  }
+  if(st.available>0)stamps.push('<div class="stamp free">🎁</div>');
+  const msg=st.available>0
+    ?'<div class="loyalty-msg earned" style="margin-top:6px">'+st.available+' free wash available!</div>'
+    :'<div class="loyalty-msg progress" style="margin-top:6px">'+st.next+' more wash'+(st.next>1?'es':'')+' for next free wash</div>';
+  return '<div style="padding:14px 16px;border-bottom:1px solid var(--border)">'
+    +'<div class="loyalty-title" style="margin-bottom:8px"><span>⭐ Loyalty Card ('+st.threshold+' = 1 free)</span>'
+    +'<span style="font-size:12px;font-weight:500;color:var(--text2);text-transform:none">'+st.paidWashes+' washes · '+st.available+' free available</span></div>'
+    +'<div class="loyalty-stamps">'+stamps.join('')+'</div>'+msg+'</div>';
+}
 function crmDetail(c){
   const vhcls=Vehicles.byCustomer(c.id);
   const hist=Orders.all().filter(o=>o.customerId===c.id).slice(0,8);
@@ -1391,10 +1489,11 @@ function crmDetail(c){
       <button class="svc-act-btn del" onclick="deleteCust('${c.id}')">${svgIcon('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}</button>
     </div>
     <div class="crm-detail-stats">
-      <div class="stat-box"><div class="stat-box-val">${c.visitCount}</div><div class="stat-box-lbl">Visits</div></div>
+      <div class="stat-box"><div class="stat-box-val">${c.visitCount}</div><div class="stat-box-lbl">Washes</div></div>
       <div class="stat-box"><div class="stat-box-val">${fmt(c.totalSpending)}</div><div class="stat-box-lbl">Spent</div></div>
       <div class="stat-box"><div class="stat-box-val">${vhcls.length}</div><div class="stat-box-lbl">Vehicles</div></div>
     </div>
+    ${buildLoyaltyCardHTML(c)}
     <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:13.5px">Vehicles</span><button class="add-btn" style="height:30px;font-size:12px" onclick="addVehicleForm('${c.id}')">+ Add</button></div>
     <div id="vhcl-section-${c.id}">
       ${vhcls.length?vhcls.map(v=>`<div class="vehicle-row"><div class="vehicle-icon-wrap">${svgIcon('<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>')}</div><div style="flex:1"><div style="font-weight:600;font-size:13.5px">${v.plate}</div><div style="color:var(--text3);font-size:12px;text-transform:capitalize">${v.brand||''} ${v.model||''} · ${v.color||''} · ${v.type||''}</div></div></div>`).join(''):'<div style="padding:14px 16px;font-size:13px;color:var(--text3)">No vehicles</div>'}
@@ -1619,7 +1718,22 @@ function renderSettings(){
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-header">${svgIcon('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>')} Data Storage</div>
+      <div class="settings-header"><svg style="width:18px;height:18px;color:var(--primary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Loyalty Programme</div>
+      <div class="settings-body">
+        <div class="settings-row"><label class="settings-label">Free wash after how many paid washes?</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input class="form-input" id="loyalty-threshold" type="number" min="1" max="20" value="${getLoyaltyThreshold()}" style="width:80px;text-align:center;font-weight:700;font-size:16px"/>
+            <span style="font-size:13px;color:var(--text2)">paid washes = 1 FREE wash</span>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--text2);margin-bottom:12px">
+          Example: set to <strong>3</strong> → customer gets a free wash after every 3 paid washes
+        </div>
+        <button class="btn-sm btn-advance" onclick="saveLoyaltySetting()">Save Loyalty Setting</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-header"><svg style="width:18px;height:18px;color:var(--primary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Data Storage</div>
       <div class="settings-body">
         <div class="info-box"><p>Currently using localStorage</p><p>All data lives in this browser. To sync across devices, migrate to Supabase — see /docs/supabase-migration.md</p></div>
         <div style="margin-top:14px"><button class="danger-btn" onclick="clearAllData()">Clear All Data</button></div>
@@ -1639,6 +1753,11 @@ function saveSettings(){
   localStorage.setItem('cw_shop_name',document.getElementById('set-shop-name')?.value||'CarWash Pro');
   localStorage.setItem('cw_shop_phone',document.getElementById('set-shop-phone')?.value||'');
   toast('Settings saved!','success');
+}
+function saveLoyaltySetting(){
+  const n=parseInt(document.getElementById('loyalty-threshold')?.value)||3;
+  setLoyaltyThreshold(Math.max(1,Math.min(20,n)));
+  toast('Loyalty setting saved! Every '+n+' washes = 1 free wash','success');
 }
 
 function clearAllData(){
