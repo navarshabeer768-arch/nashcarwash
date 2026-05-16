@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#1e40af"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>CarWash Pro</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f8faff;--surface:#ffffff;--surface2:#f1f5ff;
+  --border:#e2e8f4;--border2:#cbd5e8;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --primary:#1e40af;--primary-light:#dbeafe;--primary-dark:#1e3a8a;
+  --green:#166534;--green-bg:#dcfce7;
+  --amber:#92400e;--amber-bg:#fef3c7;
+  --blue:#1e40af;--blue-bg:#dbeafe;
+  --purple:#6d28d9;--purple-bg:#ede9fe;
+  --red:#991b1b;--red-bg:#fee2e2;
+  --gray:#374151;--gray-bg:#f3f4f6;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --font:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --transition:0.18s ease;
+}
+.dark{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#162032;
+  --border:#334155;--border2:#475569;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --primary:#3b82f6;--primary-light:#1e3a8a;--primary-dark:#60a5fa;
+  --green:#4ade80;--green-bg:#14532d;
+  --amber:#fbbf24;--amber-bg:#78350f;
+  --blue:#60a5fa;--blue-bg:#1e3a8a;
+  --purple:#a78bfa;--purple-bg:#4c1d95;
+  --red:#f87171;--red-bg:#7f1d1d;
+  --gray:#d1d5db;--gray-bg:#1f2937;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;overflow:hidden;height:100dvh;display:flex}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ─── Sidebar ────────────────────────────────────────────────── */
+#sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform var(--transition);z-index:100}
+#sidebar .logo{display:flex;align-items:center;gap:10px;padding:20px 16px 18px;border-bottom:1px solid var(--border)}
+#sidebar .logo-icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#sidebar .logo-icon svg{width:20px;height:20px;fill:white}
+#sidebar .logo-text{font-weight:600;font-size:15px}
+#sidebar .logo-sub{font-size:11px;color:var(--text3);text-transform:capitalize}
+#sidebar nav{flex:1;padding:12px 8px;overflow-y:auto}
+#sidebar nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:all var(--transition);cursor:pointer;margin-bottom:2px}
+#sidebar nav a:hover{background:var(--surface2);color:var(--text)}
+#sidebar nav a.active{background:var(--primary);color:#fff}
+#sidebar nav a svg{width:17px;height:17px;flex-shrink:0;opacity:.85}
+#sidebar nav a.active svg{opacity:1}
+#sidebar .user-area{border-top:1px solid var(--border);padding:12px 8px}
+#sidebar .user-card{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm)}
+#sidebar .user-avatar{width:32px;height:32px;background:var(--primary-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--primary);flex-shrink:0}
+.dark #sidebar .user-avatar{background:var(--primary-light);color:var(--primary-dark)}
+#sidebar .user-name{font-size:13px;font-weight:600;line-height:1.3}
+#sidebar .user-role{font-size:11px;color:var(--text3);text-transform:capitalize}
+#sidebar .user-actions{display:flex;gap:4px;margin-top:4px;padding:0 2px}
+.btn-icon{width:36px;height:36px;border:none;background:none;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all var(--transition);flex:1}
+.btn-icon:hover{background:var(--surface2);color:var(--text)}
+.btn-icon.danger:hover{background:var(--red-bg);color:var(--red)}
+.btn-icon svg{width:16px;height:16px}
+
+/* ─── Mobile overlay ─────────────────────────────────────────── */
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+@media(max-width:768px){
+  #sidebar{position:fixed;inset-y:0;left:0;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.open{display:block}
+}
+
+/* ─── Main ───────────────────────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#topbar{display:none;align-items:center;gap:12px;padding:0 16px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+@media(max-width:768px){#topbar{display:flex}}
+#topbar .logo-m{display:flex;align-items:center;gap:8px;flex:1;font-weight:600;font-size:15px}
+#topbar .logo-m svg{width:22px;height:22px;fill:var(--primary)}
+#content{flex:1;overflow-y:auto;padding:0}
+.page{display:none;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-inner{padding:24px;max-width:1200px}
+@media(max-width:600px){.page-inner{padding:16px}}
+
+/* ─── Auth overlay ───────────────────────────────────────────── */
+#auth-screen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 32px;width:100%;max-width:400px;box-shadow:var(--shadow-lg)}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.auth-logo-icon{width:42px;height:42px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.auth-logo-icon svg{width:24px;height:24px;fill:white}
+.auth-logo-text{font-size:20px;font-weight:600}
+.auth-title{font-size:22px;font-weight:600;margin-bottom:4px}
+.auth-sub{color:var(--text2);font-size:13.5px;margin-bottom:28px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text2)}
+.form-input{width:100%;height:44px;padding:0 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:14px;transition:border var(--transition),box-shadow var(--transition);outline:none}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.form-input-wrap{position:relative}
+.form-input-wrap .form-input{padding-right:44px}
+.form-input-wrap .eye-btn{position:absolute;right:0;top:0;width:44px;height:44px;border:none;background:none;cursor:pointer;color:var(--text3);display:flex;align-items:center;justify-content:center}
+.form-input-wrap .eye-btn svg{width:18px;height:18px}
+.btn{height:44px;padding:0 20px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all var(--transition)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-full{width:100%}
+.demo-accounts{margin-top:20px;background:var(--surface2);border-radius:var(--radius-sm);padding:14px}
+.demo-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.demo-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.demo-btn{padding:10px 6px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:var(--font);display:flex;flex-direction:column;align-items:center;gap:6px;transition:all var(--transition)}
+.demo-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.demo-dot{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.demo-lbl{font-size:12px;font-weight:500;color:var(--text2)}
+
+/* ─── Cards & KPIs ───────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.card-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+@media(min-width:900px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:box-shadow var(--transition)}
+.kpi:hover{box-shadow:var(--shadow)}
+.kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.kpi-icon svg{width:20px;height:20px}
+.kpi-val{font-size:26px;font-weight:600;line-height:1;margin-bottom:4px;font-family:var(--font-mono)}
+.kpi-lbl{font-size:12px;color:var(--text3)}
+.kpi-trend{font-size:12px;font-weight:600;display:flex;align-items:center;gap:3px;margin-top:6px}
+.trend-up{color:var(--green)}
+.trend-dn{color:var(--red)}
+.chart-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px}
+@media(min-width:900px){.chart-grid{grid-template-columns:2fr 1fr}}
+.chart-wrap{height:220px;position:relative}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+.two-col{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.two-col{grid-template-columns:1fr 1fr}}
+
+/* ─── Queue ──────────────────────────────────────────────────── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.status-waiting{background:var(--amber-bg);color:var(--amber)}
+.status-washing{background:var(--blue-bg);color:var(--blue)}
+.status-drying{background:var(--purple-bg);color:var(--purple)}
+.status-ready{background:var(--green-bg);color:var(--green)}
+.status-delivered{background:var(--gray-bg);color:var(--gray)}
+.status-cancelled{background:var(--red-bg);color:var(--red)}
+.queue-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:12.5px;font-weight:500;cursor:pointer;color:var(--text2);transition:all var(--transition);font-family:var(--font)}
+.filter-btn.active,.filter-btn:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.order-num{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;font-family:var(--font-mono)}
+.order-body{flex:1;min-width:0}
+.order-service{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.order-meta{font-size:12px;color:var(--text3);margin-bottom:8px}
+.order-timeline{display:flex;align-items:center;gap:2px;margin-top:8px}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background var(--transition)}
+.tl-dot.done{background:var(--primary)}
+.tl-dot.current{background:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+.tl-line{height:2px;flex:1;background:var(--border);transition:background var(--transition)}
+.tl-line.done{background:var(--primary)}
+.order-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-sm{height:34px;padding:0 14px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all var(--transition);white-space:nowrap}
+.btn-sm svg{width:14px;height:14px;flex-shrink:0}
+.btn-advance{background:var(--primary);color:#fff}
+.btn-advance:hover{background:var(--primary-dark)}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--surface2)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{width:64px;height:64px;margin-bottom:14px;opacity:.3}
+.empty-title{font-size:15px;font-weight:500;color:var(--text2)}
+.empty-sub{font-size:13px;margin-top:4px}
+
+/* ─── POS ────────────────────────────────────────────────────── */
+.pos-layout{display:grid;grid-template-columns:1fr 360px;gap:16px;height:calc(100dvh - 57px);overflow:hidden}
+@media(max-width:1024px){.pos-layout{grid-template-columns:1fr;height:auto;overflow:visible}}
+@media(max-width:768px){.pos-layout{height:auto}}
+.pos-left{overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.pos-right{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+@media(max-width:1024px){.pos-right{border:1px solid var(--border);border-radius:var(--radius);margin:0 20px 20px}}
+.cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.cat-tab{padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:12.5px;font-weight:500;cursor:pointer;color:var(--text2);transition:all var(--transition);white-space:nowrap;font-family:var(--font)}
+.cat-tab.active,.cat-tab:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+@media(max-width:500px){.services-grid{grid-template-columns:repeat(2,1fr)}}
+.service-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all var(--transition);user-select:none}
+.service-card:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+.service-card:active{transform:scale(.97)}
+.svc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px}
+.svc-name{font-weight:600;font-size:13.5px;margin-bottom:4px}
+.svc-desc{font-size:11.5px;color:var(--text3);margin-bottom:10px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.svc-footer{display:flex;align-items:center;justify-content:space-between}
+.svc-price{font-size:16px;font-weight:700;font-family:var(--font-mono)}
+.svc-dur{font-size:11px;color:var(--text3)}
+.cart-header{padding:16px;border-bottom:1px solid var(--border)}
+.cart-title{font-size:14px;font-weight:600}
+.cart-items{flex:1;overflow-y:auto;padding:12px}
+.cart-item{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px}
+.cart-item-top{display:flex;align-items:flex-start;gap:8px}
+.cart-item-name{flex:1;font-size:13.5px;font-weight:600}
+.cart-item-price{font-size:13.5px;font-weight:700;font-family:var(--font-mono)}
+.cart-item-remove{width:24px;height:24px;border:none;background:none;cursor:pointer;color:var(--text3);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.cart-item-remove:hover{background:var(--red-bg);color:var(--red)}
+.cart-item-remove svg{width:14px;height:14px}
+.extras-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.extra-btn{padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;cursor:pointer;font-family:var(--font);transition:all var(--transition)}
+.extra-btn.selected{background:var(--primary);border-color:var(--primary);color:#fff}
+.cart-footer{border-top:1px solid var(--border);padding:16px}
+.discount-row{display:flex;gap:6px;margin-bottom:12px}
+.discount-row input{flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.discount-row input:focus{border-color:var(--primary)}
+.discount-type{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.discount-type button{padding:0 10px;height:36px;border:none;background:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text2);transition:all var(--transition)}
+.discount-type button.active{background:var(--primary);color:#fff}
+.totals{font-size:13.5px;margin-bottom:14px}
+.total-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.total-row.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid var(--border);margin-top:6px}
+.total-row.discount{color:var(--green)}
+.charge-btn{width:100%;height:48px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background var(--transition)}
+.charge-btn:hover{background:var(--primary-dark)}
+.charge-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─── Customer section ──────────────────────────────────────── */
+.customer-bar{padding:12px;border-bottom:1px solid var(--border);position:relative}
+.customer-trigger{width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:border var(--transition)}
+.customer-trigger:hover{border-color:var(--border2)}
+.customer-trigger svg{width:15px;height:15px;color:var(--text3);flex-shrink:0}
+.customer-trigger span{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.customer-search-dropdown{position:absolute;top:calc(100% - 4px);left:12px;right:12px;z-index:20;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg)}
+.cs-input{width:100%;height:38px;padding:0 12px;border:none;border-bottom:1px solid var(--border);background:none;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.cs-result{padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px;transition:background var(--transition)}
+.cs-result:hover{background:var(--surface2)}
+.cs-avatar{width:30px;height:30px;background:var(--primary-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--primary);flex-shrink:0}
+.cs-empty{padding:12px;text-align:center;color:var(--text3);font-size:13px}
+
+/* ─── Customers CRM ─────────────────────────────────────────── */
+.crm-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;min-height:calc(100dvh - 56px - 48px)}
+@media(max-width:768px){.crm-layout{grid-template-columns:1fr}}
+.crm-list{overflow-y:auto;max-height:calc(100dvh - 56px - 150px)}
+.crm-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--transition);border:1px solid transparent}
+.crm-item:hover{background:var(--surface2)}
+.crm-item.active{background:var(--primary-light);border-color:rgba(59,130,246,.25)}
+.crm-avatar{width:38px;height:38px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--primary);flex-shrink:0}
+.crm-name{font-weight:600;font-size:13.5px}
+.crm-phone{font-size:12px;color:var(--text3)}
+.crm-stats-row{display:flex;gap:8px;margin-top:-4px;font-size:11.5px;color:var(--text3)}
+.crm-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.crm-detail-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
+.crm-big-avatar{width:52px;height:52px;background:var(--primary-light);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:var(--primary);flex-shrink:0}
+.crm-detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px;border-bottom:1px solid var(--border)}
+.stat-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.stat-box-val{font-size:18px;font-weight:700;font-family:var(--font-mono)}
+.stat-box-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.vehicle-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.vehicle-icon-wrap{width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.vehicle-icon-wrap svg{width:18px;height:18px;color:var(--text3)}
+.history-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.history-num{width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:var(--font-mono)}
+
+/* ─── Services admin ─────────────────────────────────────────── */
+.services-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.svc-admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all var(--transition)}
+.svc-admin-card.inactive{opacity:.55}
+.svc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.svc-icon-lg{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.svc-actions{display:flex;gap:4px}
+.svc-act-btn{width:30px;height:30px;border:none;background:none;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all var(--transition)}
+.svc-act-btn:hover{background:var(--surface2);color:var(--text)}
+.svc-act-btn.del:hover{background:var(--red-bg);color:var(--red)}
+.svc-act-btn svg{width:15px;height:15px}
+.svc-info-row{display:flex;align-items:center;gap:14px;margin-top:12px;font-size:13px}
+.badge-cat{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize}
+.extras-list{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
+.extra-chip{padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11.5px;color:var(--text2)}
+.power-btn{width:30px;height:30px;border:none;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.power-btn svg{width:15px;height:15px}
+.power-on{background:var(--green-bg);color:var(--green)}
+.power-off{background:var(--gray-bg);color:var(--gray)}
+
+/* ─── Employee screen ────────────────────────────────────────── */
+.emp-tabs{display:flex;gap:6px;background:var(--surface2);padding:4px;border-radius:var(--radius-sm);margin-bottom:18px}
+.emp-tab{flex:1;padding:8px;border:none;background:none;border-radius:6px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all var(--transition)}
+.emp-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.emp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.emp-card-status{padding:8px 16px;display:flex;align-items:center;gap:8px}
+.emp-card-body{padding:16px}
+.emp-card-service{font-size:15px;font-weight:600;margin-bottom:4px}
+.emp-card-meta{font-size:12.5px;color:var(--text3);margin-bottom:12px}
+.emp-notes{width:100%;height:64px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;resize:none;outline:none;margin-bottom:12px}
+.emp-notes:focus{border-color:var(--primary)}
+.advance-btn{width:100%;height:46px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all var(--transition);letter-spacing:.01em}
+.advance-btn:hover{background:var(--primary-dark)}
+.advance-btn:active{transform:scale(.98)}
+.advance-btn svg{width:16px;height:16px}
+
+/* ─── Reports ────────────────────────────────────────────────── */
+.reports-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.export-row{display:flex;gap:8px;margin-bottom:20px}
+.leaderboard-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.leaderboard-rank{width:26px;height:26px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.ldr-bar-wrap{flex:1;min-width:0}
+.ldr-name{font-size:13px;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldr-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.ldr-bar-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .6s ease}
+.ldr-stat{font-size:13px;font-weight:600;font-family:var(--font-mono);text-align:right;white-space:nowrap;flex-shrink:0}
+
+/* ─── Settings ───────────────────────────────────────────────── */
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+.settings-header{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--border);font-weight:600}
+.settings-header svg{width:18px;height:18px;color:var(--primary)}
+.settings-body{padding:18px 20px}
+.settings-row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.settings-row:last-child{margin-bottom:0}
+.settings-label{font-size:13px;font-weight:500;color:var(--text2)}
+.info-box{background:var(--blue-bg);border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--blue)}
+.info-box p:first-child{font-weight:600;margin-bottom:4px}
+.info-box p:last-child{opacity:.8}
+.danger-btn{height:36px;padding:0 16px;border:1px solid rgba(153,27,27,.4);border-radius:var(--radius-sm);background:none;color:var(--red);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition)}
+.danger-btn:hover{background:var(--red-bg)}
+
+/* ─── Modal ──────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .2s}
+.modal-overlay.open{display:flex}
+.modal-overlay.open{opacity:1}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);transform:scale(.96);transition:transform .2s}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:18px;font-weight:600}
+.modal-close{width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.modal-close:hover{background:var(--surface2)}
+.modal-close svg{width:18px;height:18px}
+.modal-actions{display:flex;gap:8px;margin-top:22px}
+.btn-cancel{flex:1;height:44px;border:1px solid var(--border);border-radius:var(--radius-sm);background:none;color:var(--text2);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all var(--transition)}
+.btn-cancel:hover{background:var(--surface2)}
+.btn-confirm{flex:1;height:44px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background var(--transition)}
+.btn-confirm:hover{background:var(--primary-dark)}
+.btn-confirm.green{background:#166534}
+.btn-confirm.green:hover{background:#14532d}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.pay-method{padding:16px;border:2px solid var(--border);border-radius:var(--radius);background:none;cursor:pointer;font-family:var(--font);display:flex;flex-direction:column;align-items:center;gap:8px;transition:all var(--transition)}
+.pay-method.selected,.pay-method:hover{border-color:var(--primary);background:var(--primary-light)}
+.pay-method svg{width:24px;height:24px;color:var(--primary)}
+.pay-method span{font-size:13px;font-weight:600}
+.cash-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.cash-preset{height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition)}
+.cash-preset:hover{border-color:var(--primary);background:var(--primary-light)}
+.change-display{background:var(--green-bg);border-radius:var(--radius-sm);padding:12px 14px;display:flex;justify-content:space-between;margin-top:8px}
+.change-display span:first-child{color:var(--green);font-weight:500;font-size:13.5px}
+.change-display span:last-child{color:var(--green);font-weight:700;font-size:13.5px;font-family:var(--font-mono)}
+
+/* ─── Toast ──────────────────────────────────────────────────── */
+#toast-container{position:fixed;top:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:10px;max-width:320px;pointer-events:all;animation:slideInRight .25s ease;color:var(--text)}
+.toast.success{border-left:3px solid #16a34a}
+.toast.error{border-left:3px solid #dc2626}
+.toast.info{border-left:3px solid var(--primary)}
+@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast-icon{width:18px;height:18px;flex-shrink:0}
+.toast-icon.s{color:#16a34a}
+.toast-icon.e{color:#dc2626}
+.toast-icon.i{color:var(--primary)}
+
+/* ─── Spinner ────────────────────────────────────────────────── */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── Search bar ─────────────────────────────────────────────── */
+.search-bar{position:relative}
+.search-bar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3);pointer-events:none}
+.search-bar input{width:100%;height:40px;padding:0 14px 0 38px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:var(--font);font-size:13.5px;outline:none;transition:border var(--transition)}
+.search-bar input:focus{border-color:var(--primary)}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-heading{font-size:19px;font-weight:600}
+.page-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.add-btn{height:38px;padding:0 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background var(--transition)}
+.add-btn:hover{background:var(--primary-dark)}
+.add-btn svg{width:16px;height:16px}
+.select-emp{height:30px;padding:0 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-family:var(--font);font-size:12px;outline:none;cursor:pointer}
+
+/* ─── Bookings ───────────────────────────────────────────────── */
+.booking-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.bookings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.bk-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.bk-avatar{width:36px;height:36px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--primary);flex-shrink:0}
+.bk-name{font-weight:600;font-size:14px}
+.bk-phone{font-size:12px;color:var(--text3)}
+.bk-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12.5px;color:var(--text2);margin-bottom:12px}
+.bk-meta-item{display:flex;align-items:center;gap:5px}
+.bk-meta-item svg{width:14px;height:14px;color:var(--text3);flex-shrink:0}
+.bk-actions{display:flex;gap:6px}
+
+/* ─── Misc ───────────────────────────────────────────────────── */
+.section-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.tag{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+
+<!-- ─── Auth Screen ──────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4.5 2.7-1 1.7L11 14.5V7z"/><path d="M7 4.5C5.3 5.9 4 8 4 10.5c0 .8.1 1.5.3 2.2l1.9-.5A6 6 0 0 1 6 10.5c0-2 1-3.7 2.5-4.8L7 4.5z"/></svg></div>
+      <span class="auth-logo-text">CarWash Pro</span>
+    </div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Sign in to your workspace</p>
+    <div class="form-group">
+      <label class="form-label" for="login-email">Email</label>
+      <input class="form-input" type="email" id="login-email" placeholder="you@carwash.com" autocomplete="email"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-pw">Password</label>
+      <div class="form-input-wrap">
+        <input class="form-input" type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password"/>
+        <button class="eye-btn" onclick="togglePw()" type="button">
+          <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="demo-accounts">
+      <div class="demo-title">Demo Accounts</div>
+      <div class="demo-btns">
+        <button class="demo-btn" onclick="fillDemo('admin@carwash.com','Admin@123')">
+          <div class="demo-dot" style="background:#1e40af">A</div>
+          <span class="demo-lbl">Admin</span>
+        </button>
+        <button class="demo-btn" onclick="fillDemo('cashier@carwash.com','Cashier@123')">
+          <div class="demo-dot" style="background:#166534">C</div>
+          <span class="demo-lbl">Cashier</span>
+        </button>
+        <button class="demo-btn" onclick="fillDemo('employee@carwash.com','Employee@123')">
+          <div class="demo-dot" style="background:#6d28d9">E</div>
+          <span class="demo-lbl">Employee</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast container ─────────────────────────────────────── -->
+<div id="toast-container" role="alert" aria-live="polite"></div>
+
+<!-- ─── Sidebar ─────────────────────────────────────────────── -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+<aside id="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div>
+    <div><div class="logo-text">CarWash Pro</div><div class="logo-sub" id="sb-role">admin</div></div>
+  </div>
+  <nav id="sidebar-nav"></nav>
+  <div class="user-area">
+    <div class="user-card">
+      <div class="user-avatar" id="sb-avatar">A</div>
+      <div><div class="user-name" id="sb-name">Admin</div><div class="user-role" id="sb-email">admin@carwash.com</div></div>
+    </div>
+    <div class="user-actions">
+      <button class="btn-icon" onclick="toggleDark()" title="Toggle theme">
+        <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="btn-icon danger" onclick="doLogout()" title="Logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ─── Main ─────────────────────────────────────────────────── -->
+<div id="main">
+  <header id="topbar">
+    <button class="btn-icon" onclick="openSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="logo-m">
+      <svg viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+      CarWash Pro
+    </div>
+    <button class="btn-icon" onclick="toggleDark()">
+      <svg id="theme-icon-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </header>
+  <div id="content">
+    <div class="page active" id="page-dashboard"><div class="page-inner" id="dash-inner"></div></div>
+    <div class="page" id="page-pos"></div>
+    <div class="page" id="page-queue"><div class="page-inner" id="queue-inner"></div></div>
+    <div class="page" id="page-bookings"><div class="page-inner" id="bookings-inner"></div></div>
+    <div class="page" id="page-employee"><div class="page-inner" id="emp-inner"></div></div>
+    <div class="page" id="page-customers"><div class="page-inner" id="crm-inner"></div></div>
+    <div class="page" id="page-services"><div class="page-inner" id="svc-inner"></div></div>
+    <div class="page" id="page-reports"><div class="page-inner" id="rpt-inner"></div></div>
+    <div class="page" id="page-settings"><div class="page-inner" id="set-inner"></div></div>
+  </div>
+</div>
+
+<!-- ─── Payment Modal ────────────────────────────────────────── -->
+<div class="modal-overlay" id="pay-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Process Payment</span>
+      <button class="modal-close" onclick="closeModal('pay-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:18px">Total: <strong id="pay-total-display" style="color:var(--text);font-family:var(--font-mono)">$0</strong></p>
+    <div class="pay-methods">
+      <button class="pay-method selected" id="pm-cash" onclick="selectPayMethod('cash')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+        <span>Cash</span>
+      </button>
+      <button class="pay-method" id="pm-card" onclick="selectPayMethod('card')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <span>Card</span>
+      </button>
+    </div>
+    <div id="cash-section">
+      <input class="form-input" type="number" id="cash-given" placeholder="Amount given by customer" oninput="calcChange()" style="margin-bottom:8px"/>
+      <div class="cash-presets">
+        <button class="cash-preset" onclick="setCash(20)">$20</button>
+        <button class="cash-preset" onclick="setCash(50)">$50</button>
+        <button class="cash-preset" onclick="setCash(100)">$100</button>
+      </div>
+      <div class="change-display" id="change-display" style="display:none">
+        <span>Change:</span><span id="change-amount" style="font-family:var(--font-mono)">$0</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('pay-modal')">Cancel</button>
+      <button class="btn-confirm green" id="pay-confirm-btn" onclick="confirmPayment()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm Payment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add Customer Modal ───────────────────────────────────── -->
+<div class="modal-overlay" id="add-customer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Customer</span>
+      <button class="modal-close" onclick="closeModal('add-customer-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="new-cust-name" placeholder="Ahmed Al-Rashid"/></div>
+    <div class="form-group"><label class="form-label">Phone *</label><input class="form-input" id="new-cust-phone" placeholder="+974 1234 5678" type="tel"/></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="new-cust-email" placeholder="optional" type="email"/></div>
+    <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="new-cust-notes" placeholder="optional"/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('add-customer-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="saveNewCustomer()">Add Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add/Edit Service Modal ──────────────────────────────── -->
+<div class="modal-overlay" id="svc-modal">
+  <div class="modal" style="max-width:520px;max-height:90dvh;overflow-y:auto">
+    <div class="modal-header">
+      <span class="modal-title" id="svc-modal-title">New Service</span>
+      <button class="modal-close" onclick="closeModal('svc-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="svc-edit-id"/>
+    <div class="form-group"><label class="form-label">Service Name *</label><input class="form-input" id="svc-name" placeholder="Premium Wash"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Price ($) *</label><input class="form-input" id="svc-price" type="number" placeholder="30"/></div>
+      <div class="form-group"><label class="form-label">Duration (min)</label><input class="form-input" id="svc-duration" type="number" placeholder="30"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-input" id="svc-category">
+          <option value="exterior">Exterior</option>
+          <option value="interior">Interior</option>
+          <option value="full">Full Detail</option>
+          <option value="specialty">Specialty</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Color</label><input class="form-input" id="svc-color" type="color" value="#1e40af" style="padding:4px 6px;height:44px;cursor:pointer"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="svc-desc" rows="2" style="height:auto;padding:10px 14px;resize:none" placeholder="Brief description..."></textarea></div>
+    <div class="form-group">
+      <label class="form-label">Add Extra</label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="extra-name" placeholder="Extra name" style="flex:1"/>
+        <input class="form-input" id="extra-price" type="number" placeholder="$" style="width:80px"/>
+        <button class="btn btn-primary" style="height:44px;padding:0 14px;flex-shrink:0" onclick="addExtraToForm()">Add</button>
+      </div>
+      <div id="extras-form-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('svc-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="saveService()">Save Service</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add Booking Modal ───────────────────────────────────── -->
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Booking</span>
+      <button class="modal-close" onclick="closeModal('booking-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="form-group"><label class="form-label">Customer Name *</label><input class="form-input" id="bk-name" placeholder="Ahmed Al-Rashid"/></div>
+    <div class="form-group"><label class="form-label">Phone *</label><input class="form-input" id="bk-phone" type="tel" placeholder="+974 1234 5678"/></div>
+    <div class="form-group"><label class="form-label">Vehicle Plate</label><input class="form-input" id="bk-plate" placeholder="QAT 1234"/></div>
+    <div class="form-group"><label class="form-label">Service *</label><select class="form-input" id="bk-service"></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Date *</label><input class="form-input" id="bk-date" type="date"/></div>
+      <div class="form-group">
+        <label class="form-label">Time *</label>
+        <select class="form-input" id="bk-time">
+          <option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option>
+          <option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option>
+          <option selected>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option>
+          <option>14:00</option><option>14:30</option><option>15:00</option><option>15:30</option>
+          <option>16:00</option><option>16:30</option><option>17:00</option><option>17:30</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="bk-notes" placeholder="optional"/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('booking-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="saveBooking()">Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Chart.js ─────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+// CARWASH PRO — Single-file PWA
+// Data: localStorage | Future: Supabase (see /docs/supabase-migration.md)
+// ═══════════════════════════════════════════════════════════════
+
+// ─── Keys ────────────────────────────────────────────────────────
+const K={USERS:'cw_users',CUST:'cw_cust',VHCL:'cw_vhcl',SVC:'cw_svc',ORDERS:'cw_orders',PAY:'cw_pay',NOTIF:'cw_notif',BKNG:'cw_bkng',QCT:'cw_qct',RCT:'cw_rct',SEEDED:'cw_seeded'};
+
+// ─── Tiny DB ─────────────────────────────────────────────────────
+const DB={
+  get(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}},
+  set(k,v){localStorage.setItem(k,JSON.stringify(v))},
+  counter(k,s=1){const n=parseInt(localStorage.getItem(k)||String(s-1))+1;localStorage.setItem(k,n);return n},
+  now(){return new Date().toISOString()},
+  id(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)})},
+};
+
+// ─── MODELS ─────────────────────────────────────────────────────
+const Users={
+  all(){return DB.get(K.USERS)},
+  byEmail(e){return this.all().find(u=>u.email===e)||null},
+  byId(id){return this.all().find(u=>u.id===id)||null},
+};
+const Customers={
+  all(){return DB.get(K.CUST).filter(c=>!c.deletedAt).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))},
+  byId(id){return DB.get(K.CUST).find(c=>c.id===id)||null},
+  search(q){const s=q.toLowerCase();return this.all().filter(c=>c.name.toLowerCase().includes(s)||c.phone.includes(q))},
+  create(d){const c={...d,id:DB.id(),visitCount:0,totalSpending:0,favoriteServices:[],createdAt:DB.now(),updatedAt:DB.now()};DB.set(K.CUST,[...DB.get(K.CUST),c]);return c},
+  update(id,d){const a=DB.get(K.CUST);const i=a.findIndex(c=>c.id===id);if(i<0)return null;a[i]={...a[i],...d,updatedAt:DB.now()};DB.set(K.CUST,a);return a[i]},
+  softDelete(id){this.update(id,{deletedAt:DB.now()})},
+  incVisit(id,amt){const c=this.byId(id);if(c)this.update(id,{visitCount:c.visitCount+1,totalSpending:c.totalSpending+amt})},
+};
+const Vehicles={
+  byCustomer(cid){return DB.get(K.VHCL).filter(v=>v.customerId===cid&&!v.deletedAt)},
+  create(d){const v={...d,id:DB.id(),createdAt:DB.now(),updatedAt:DB.now()};DB.set(K.VHCL,[...DB.get(K.VHCL),v]);return v},
+};
+const Services={
+  all(){return DB.get(K.SVC).sort((a,b)=>a.price-b.price)},
+  active(){return this.all().filter(s=>s.isActive)},
+  byId(id){return DB.get(K.SVC).find(s=>s.id===id)||null},
+  create(d){const s={...d,id:DB.id(),createdAt:DB.now(),updatedAt:DB.now()};DB.set(K.SVC,[...DB.get(K.SVC),s]);return s},
+  update(id,d){const a=DB.get(K.SVC);const i=a.findIndex(s=>s.id===id);if(i<0)return null;a[i]={...a[i],...d,updatedAt:DB.now()};DB.set(K.SVC,a);return a[i]},
+  delete(id){DB.set(K.SVC,DB.get(K.SVC).filter(s=>s.id!==id))},
+};
+const Orders={
+  all(){return DB.get(K.ORDERS).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))},
+  active(){return this.all().filter(o=>!['delivered','cancelled'].includes(o.status))},
+  today(){const t=new Date().toDateString();return this.all().filter(o=>new Date(o.createdAt).toDateString()===t)},
+  forDate(d){const s=new Date(d).toDateString();return this.all().filter(o=>new Date(o.createdAt).toDateString()===s)},
+  byId(id){return DB.get(K.ORDERS).find(o=>o.id===id)||null},
+  create(d){const o={...d,id:DB.id(),queueNumber:DB.counter(K.QCT),createdAt:DB.now(),updatedAt:DB.now()};DB.set(K.ORDERS,[...DB.get(K.ORDERS),o]);return o},
+  update(id,d){const a=DB.get(K.ORDERS);const i=a.findIndex(o=>o.id===id);if(i<0)return null;a[i]={...a[i],...d,updatedAt:DB.now()};DB.set(K.ORDERS,a);return a[i]},
+  setStatus(id,st){const t={};if(st==='washing')t.startedAt=DB.now();if(st==='ready')t.completedAt=DB.now();if(st==='delivered')t.deliveredAt=DB.now();return this.update(id,{status:st,...t})},
+};
+const Payments={
+  all(){return DB.get(K.PAY)},
+  today(){const t=new Date().toDateString();return this.all().filter(p=>new Date(p.createdAt).toDateString()===t)},
+  forDate(d){const s=new Date(d).toDateString();return this.all().filter(p=>new Date(p.createdAt).toDateString()===s)},
+  byOrder(oid){return this.all().find(p=>p.orderId===oid)||null},
+  create(d){const p={...d,id:DB.id(),receiptNumber:'RCP-'+DB.counter(K.RCT,1000),createdAt:DB.now()};DB.set(K.PAY,[...DB.get(K.PAY),p]);return p},
+};
+const Bookings={
+  all(){return DB.get(K.BKNG).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time))},
+  create(d){const b={...d,id:DB.id(),status:'scheduled',createdAt:DB.now()};DB.set(K.BKNG,[...DB.get(K.BKNG),b]);return b},
+  update(id,d){const a=DB.get(K.BKNG);const i=a.findIndex(b=>b.id===id);if(i<0)return;a[i]={...a[i],...d};DB.set(K.BKNG,a)},
+};
+
+// ─── SEED ────────────────────────────────────────────────────────
+function seed(){
+  if(localStorage.getItem(K.SEEDED))return;
+  const uid=()=>DB.id();
+  const n=()=>DB.now();
+  DB.set(K.USERS,[
+    {id:uid(),name:'Admin User',email:'admin@carwash.com',role:'admin',phone:'+97412345678',isActive:true,createdAt:n(),updatedAt:n()},
+    {id:uid(),name:'Cashier One',email:'cashier@carwash.com',role:'cashier',phone:'+97412345679',isActive:true,createdAt:n(),updatedAt:n()},
+    {id:uid(),name:'Employee One',email:'employee@carwash.com',role:'employee',phone:'+97412345680',isActive:true,createdAt:n(),updatedAt:n()},
+  ]);
+  const svcs=[
+    {name:'Basic Wash',desc:'Exterior wash with rinse and dry',price:15,dur:20,cat:'exterior',color:'#1e40af',extras:[{id:uid(),name:'Tire Shine',price:3},{id:uid(),name:'Air Freshener',price:2}]},
+    {name:'VIP Wash',desc:'Full exterior + hand dry + windows',price:30,dur:35,cat:'exterior',color:'#6d28d9',extras:[{id:uid(),name:'Rain Repellent',price:5}]},
+    {name:'Interior Clean',desc:'Full vacuum, wipe-down, windows',price:40,dur:45,cat:'interior',color:'#166534',extras:[{id:uid(),name:'Seat Shampoo',price:15}]},
+    {name:'Full Detail',desc:'Complete interior + exterior',price:80,dur:90,cat:'full',color:'#92400e',extras:[{id:uid(),name:'Ceramic Coat',price:50}]},
+    {name:'Steam Wash',desc:'Deep steam cleaning, sanitizes',price:55,dur:60,cat:'specialty',color:'#0e7490',extras:[]},
+    {name:'Wax & Polish',desc:'Hand wax and machine polish',price:65,dur:75,cat:'specialty',color:'#991b1b',extras:[]},
+  ];
+  DB.set(K.SVC,svcs.map(s=>({id:uid(),name:s.name,description:s.desc,price:s.price,duration:s.dur,category:s.cat,isActive:true,extras:s.extras,color:s.color,createdAt:n(),updatedAt:n()})));
+  const custs=[
+    {id:uid(),name:'Ahmed Al-Rashid',phone:'+97412345678',email:'ahmed@example.com',notes:'',visitCount:12,totalSpending:480,favoriteServices:[],createdAt:n(),updatedAt:n()},
+    {id:uid(),name:'Sarah Johnson',phone:'+97487654321',email:'sarah@example.com',notes:'',visitCount:5,totalSpending:200,favoriteServices:[],createdAt:n(),updatedAt:n()},
+  ];
+  DB.set(K.CUST,custs);
+  localStorage.setItem(K.SEEDED,'1');
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────
+const PASSWORDS={'admin@carwash.com':'Admin@123','cashier@carwash.com':'Cashier@123','employee@carwash.com':'Employee@123'};
+let currentUser=null;
+
+function loadAuth(){
+  try{const s=JSON.parse(localStorage.getItem('cw_auth')||'{}');if(s.user)currentUser=s.user}catch{}
+}
+function saveAuth(){localStorage.setItem('cw_auth',JSON.stringify({user:currentUser}))}
+
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pw=document.getElementById('login-pw').value;
+  if(!email||!pw){toast('Please enter email and password','error');return}
+  if(PASSWORDS[email]!==pw){toast('Invalid email or password','error');return}
+  const user=Users.byEmail(email);
+  if(!user){toast('User not found','error');return}
+  currentUser=user;saveAuth();
+  document.getElementById('auth-screen').style.display='none';
+  initApp();
+  toast('Welcome back, '+user.name.split(' ')[0]+'!','success');
+}
+function doLogout(){currentUser=null;saveAuth();location.reload()}
+function fillDemo(e,p){document.getElementById('login-email').value=e;document.getElementById('login-pw').value=p}
+function togglePw(){const i=document.getElementById('login-pw');i.type=i.type==='password'?'text':'password'}
+document.getElementById('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+// ─── NAV ─────────────────────────────────────────────────────────
+const ALL_PAGES=[
+  {id:'dashboard',label:'Dashboard',roles:['admin','cashier','employee'],icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+  {id:'pos',label:'POS / Cashier',roles:['admin','cashier'],icon:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>'},
+  {id:'queue',label:'Live Queue',roles:['admin','cashier','employee'],icon:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'},
+  {id:'bookings',label:'Bookings',roles:['admin','cashier'],icon:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+  {id:'employee',label:'My Tasks',roles:['admin','employee'],icon:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'},
+  {id:'customers',label:'Customers',roles:['admin','cashier'],icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+  {id:'services',label:'Services',roles:['admin'],icon:'<path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/>'},
+  {id:'reports',label:'Reports',roles:['admin'],icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
+  {id:'settings',label:'Settings',roles:['admin'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'},
+];
+let activePage='dashboard';
+
+function buildNav(){
+  const nav=document.getElementById('sidebar-nav');
+  const pages=ALL_PAGES.filter(p=>p.roles.includes(currentUser.role));
+  nav.innerHTML=pages.map(p=>`<a data-page="${p.id}" onclick="goTo('${p.id}')" class="${p.id===activePage?'active':''}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p.icon}</svg>
+    ${p.label}
+  </a>`).join('');
+}
+
+function goTo(id){
+  activePage=id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg)pg.classList.add('active');
+  buildNav();
+  closeSidebar();
+  const renders={dashboard:renderDashboard,queue:renderQueue,pos:renderPOS,customers:renderCRM,services:renderServices,reports:renderReports,settings:renderSettings,employee:renderEmployee,bookings:renderBookings};
+  if(renders[id])renders[id]();
+}
+
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open')}
+
+// ─── THEME ───────────────────────────────────────────────────────
+let dark=localStorage.getItem('cw_dark')==='1';
+function applyDark(){document.documentElement.classList.toggle('dark',dark);const s='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',so='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';['theme-icon','theme-icon-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=dark?so:s});}
+function toggleDark(){dark=!dark;localStorage.setItem('cw_dark',dark?'1':'0');applyDark();}
+
+// ─── TOAST ───────────────────────────────────────────────────────
+function toast(msg,type='info'){
+  const icons={success:'<polyline points="20 6 9 17 4 12"/>',error:'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'};
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const cls={success:'s',error:'e',info:'i'}[type];
+  t.innerHTML=`<svg class="toast-icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${icons[type]}</svg>${msg}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all .3s';setTimeout(()=>t.remove(),300)},3000);
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+function openModal(id){const m=document.getElementById(id);m.classList.add('open');requestAnimationFrame(()=>m.style.opacity='1')}
+function closeModal(id){const m=document.getElementById(id);m.style.opacity='0';setTimeout(()=>m.classList.remove('open'),200)}
+window.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>{m.style.opacity='0';setTimeout(()=>m.classList.remove('open'),200)})});
+
+// ─── FORMAT ─────────────────────────────────────────────────────
+function fmt(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0}).format(n)}
+function fmtDate(s){return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+function fmtTime(s){return new Date(s).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+function fmtTrend(n){const pos=n>=0;return`<span class="${pos?'trend-up':'trend-dn'}">${pos?'↑':'↓'}${Math.abs(n)}%</span>`}
+function svgIcon(path){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${path}</svg>`}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+let dashChartRev=null,dashChartSvc=null;
+function renderDashboard(){
+  const todayOrders=Orders.today();
+  const todayPay=Payments.today();
+  const active=Orders.active();
+  const yd=new Date();yd.setDate(yd.getDate()-1);
+  const ydPay=Payments.forDate(yd);
+  const rev=todayPay.reduce((s,p)=>s+p.amount,0);
+  const ydRev=ydPay.reduce((s,p)=>s+p.amount,0);
+  const trend=ydRev===0?100:Math.round((rev-ydRev)/ydRev*100);
+  const waiting=active.filter(o=>o.status==='waiting').length;
+  const washing=active.filter(o=>o.status==='washing').length;
+  const kpis=[
+    {icon:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',label:"Today's Revenue",val:fmt(rev),trend:fmtTrend(trend),bg:'#dcfce7',ic:'#166534'},
+    {icon:'<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',label:'Cars Washed',val:todayOrders.filter(o=>['ready','delivered'].includes(o.status)).length,bg:'#dbeafe',ic:'#1e40af'},
+    {icon:'<path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><polyline points="12 6 12 12 16 14"/>',label:'Active Orders',val:active.length,bg:'#ede9fe',ic:'#6d28d9'},
+    {icon:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/>',label:'Waiting',val:waiting,bg:'#fef3c7',ic:'#92400e'},
+  ];
+  const rev7=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const dp=Payments.forDate(d);rev7.push({lbl:d.toLocaleDateString('en-US',{weekday:'short'}),rev:dp.reduce((s,p)=>s+p.amount,0),cnt:Orders.forDate(d).length})}
+  const svcMap=new Map();
+  todayOrders.forEach(o=>o.items.forEach(it=>{const e=svcMap.get(it.serviceName)||{cnt:0,rev:0};svcMap.set(it.serviceName,{cnt:e.cnt+1,rev:e.rev+it.subtotal})}));
+  const svcData=[...svcMap.entries()].sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,5);
+  const COLORS=['#1e40af','#6d28d9','#166534','#92400e','#0e7490'];
+  document.getElementById('dash-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Dashboard</div><div class="page-sub">Good ${new Date().getHours()<12?'morning':'afternoon'}, ${currentUser.name.split(' ')[0]} 👋</div></div>
+      <button class="add-btn" onclick="renderDashboard()">${svgIcon('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.24"/>')} Refresh</button>
+    </div>
+    <div class="kpi-grid">${kpis.map(k=>`<div class="kpi"><div class="kpi-icon" style="background:${k.bg}"><svg viewBox="0 0 24 24" fill="none" stroke="${k.ic}" stroke-width="2">${k.icon}</svg></div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.label}</div>${k.trend?`<div class="kpi-trend">${k.trend} vs yesterday</div>`:''}</div>`).join('')}</div>
+    <div class="chart-grid">
+      <div class="card"><div class="card-title">Revenue — Last 7 Days</div><div class="card-sub">Daily earnings</div><div class="chart-wrap"><canvas id="chart-rev"></canvas></div></div>
+      <div class="card"><div class="card-title">Services Today</div><div class="card-sub">By order count</div><div class="chart-wrap" style="height:180px"><canvas id="chart-svc"></canvas></div>
+        <div style="margin-top:12px">${svcData.map(([n,d],i)=>`<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:6px"><div style="width:10px;height:10px;border-radius:3px;background:${COLORS[i]};flex-shrink:0"></div><span style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span><span style="font-weight:600;font-family:var(--font-mono)">${d.cnt}x</span></div>`).join('')||'<p style="font-size:13px;color:var(--text3);text-align:center;padding:8px">No orders today</p>'}</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div class="card-title">Queue Status</div><div class="card-sub">Current snapshot</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${[['Waiting',waiting,'#fef3c7','#92400e'],['Washing',washing,'#dbeafe','#1e40af'],['Completed',todayOrders.filter(o=>['ready','delivered'].includes(o.status)).length,'#dcfce7','#166534'],['Total Active',active.length,'#ede9fe','#6d28d9']].map(([l,v,bg,c])=>`<div style="background:${bg};border-radius:10px;padding:12px"><div style="font-size:24px;font-weight:700;color:${c};font-family:var(--font-mono)">${v}</div><div style="font-size:12px;color:var(--text2)">${l}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Recent Active Orders</div><div class="card-sub"></div>
+        ${active.slice(0,5).map(o=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:var(--font-mono);flex-shrink:0">#${o.queueNumber}</div><div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.items[0]?.serviceName||'—'}</div><div style="font-size:11.5px;color:var(--text3)">${fmtTime(o.createdAt)}</div></div><span class="status-badge status-${o.status}">${o.status}</span></div>`).join('')||'<p style="font-size:13px;color:var(--text3);text-align:center;padding:16px">No active orders</p>'}
+      </div>
+    </div>`;
+  // Charts
+  if(dashChartRev){dashChartRev.destroy();dashChartRev=null}
+  if(dashChartSvc){dashChartSvc.destroy();dashChartSvc=null}
+  const cc=dark?'#94a3b8':'#64748b',gc=dark?'#334155':'#e2e8f4';
+  const rc=document.getElementById('chart-rev');
+  if(rc){dashChartRev=new Chart(rc,{type:'bar',data:{labels:rev7.map(d=>d.lbl),datasets:[{data:rev7.map(d=>d.rev),backgroundColor:'#1e40af',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},scales:{x:{ticks:{color:cc,font:{size:11}},grid:{display:false}},y:{ticks:{color:cc,font:{size:11},callback:v=>'$'+v},grid:{color:gc}}}}})}
+  const sc=document.getElementById('chart-svc');
+  if(sc&&svcData.length){dashChartSvc=new Chart(sc,{type:'doughnut',data:{labels:svcData.map(d=>d[0]),datasets:[{data:svcData.map(d=>d[1].cnt),backgroundColor:COLORS.slice(0,svcData.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}}}})}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POS
+// ═══════════════════════════════════════════════════════════════
+let posCart=[],posCust=null,posDisc=0,posDiscType='fixed',posPayMethod='cash',posPendingOrder=null;
+let posSearchOpen=false,posCustQuery='',posCustResults=[];
+
+function renderPOS(){
+  const svcs=Services.active();
+  const cats=['all','exterior','interior','full','specialty'];
+  document.getElementById('page-pos').innerHTML=`
+    <div class="pos-layout">
+      <div class="pos-left">
+        <div style="display:flex;gap:8px">
+          <div class="search-bar" style="flex:1">${svgIcon('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')}<input id="svc-search" placeholder="Search services…" oninput="filterServices()" /></div>
+        </div>
+        <div class="cat-tabs" id="pos-cats">${cats.map(c=>`<button class="cat-tab${c==='all'?' active':''}" onclick="selectCat('${c}')">${c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join('')}</div>
+        <div class="services-grid" id="pos-svc-grid">${buildServiceCards(svcs,'all')}</div>
+      </div>
+      <div class="pos-right">
+        <div class="customer-bar">
+          <div class="customer-trigger" onclick="toggleCustSearch()">
+            ${svgIcon('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>')}
+            <span id="pos-cust-label" style="color:var(--text3)">${posCust?posCust.name:'Walk-in / Select customer'}</span>
+            ${posCust?`<button onclick="clearPosCust(event)" style="border:none;background:none;cursor:pointer;color:var(--text3)">${svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>`:''}
+          </div>
+          <div class="customer-search-dropdown" id="cust-dropdown" style="display:none">
+            <input class="cs-input" id="cs-query" placeholder="Search by name or phone…" oninput="searchCust()" />
+            <div id="cs-results"></div>
+          </div>
+        </div>
+        <div class="cart-header"><div class="cart-title">Order — <span id="cart-count">0 items</span></div></div>
+        <div class="cart-items" id="cart-items-list"><div class="empty-state" style="padding:40px 20px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="empty-title">Cart is empty</span><span class="empty-sub">Tap a service to add</span></div></div>
+        <div class="cart-footer">
+          <div class="discount-row">
+            ${svgIcon('<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>')}
+            <input type="number" id="disc-val" min="0" placeholder="Discount" oninput="updateTotals()" style="flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
+            <div class="discount-type"><button id="disc-fixed" class="active" onclick="setDiscType('fixed')">$</button><button id="disc-pct" onclick="setDiscType('percent')">%</button></div>
+          </div>
+          <div class="totals" id="pos-totals"></div>
+          <button class="charge-btn" id="charge-btn" onclick="openPayment()" disabled>
+            ${svgIcon('<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>')}
+            <span id="charge-label">Add items to order</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  updateCartUI();
+}
+
+function buildServiceCards(svcs,cat){
+  const list=cat==='all'?svcs:svcs.filter(s=>s.category===cat);
+  if(!list.length)return'<p style="grid-column:1/-1;text-align:center;color:var(--text3);padding:20px;font-size:13px">No services found</p>';
+  return list.map(s=>`<div class="service-card" onclick="addToCart('${s.id}')">
+    <div class="svc-icon" style="background:${s.color}22">🚗</div>
+    <div class="svc-name">${s.name}</div>
+    <div class="svc-desc">${s.description}</div>
+    <div class="svc-footer"><span class="svc-price" style="color:var(--text)">${fmt(s.price)}</span><span class="svc-dur">${s.duration}m</span></div>
+  </div>`).join('');
+}
+
+let activeCat='all';
+function selectCat(cat){
+  activeCat=cat;
+  document.querySelectorAll('.cat-tab').forEach(b=>{b.classList.toggle('active',b.textContent.toLowerCase().trim()===cat||(cat==='all'&&b.textContent==='All'))});
+  filterServices();
+}
+function filterServices(){
+  const q=(document.getElementById('svc-search')?.value||'').toLowerCase();
+  const svcs=Services.active().filter(s=>s.name.toLowerCase().includes(q)||(activeCat==='all'||s.category===activeCat));
+  const g=document.getElementById('pos-svc-grid');
+  if(g)g.innerHTML=buildServiceCards(Services.active().filter(s=>(activeCat==='all'||s.category===activeCat)&&s.name.toLowerCase().includes(q)),activeCat);
+}
+
+function addToCart(svcId){
+  const s=Services.byId(svcId);if(!s)return;
+  posCart.push({id:DB.id(),service:s,extras:[],subtotal:s.price});
+  updateCartUI();toast(s.name+' added','success');
+}
+
+function removeFromCart(idx){posCart.splice(idx,1);updateCartUI()}
+
+function toggleCartExtra(idx,extraId){
+  const item=posCart[idx];if(!item)return;
+  const ex=item.service.extras.find(e=>e.id===extraId);if(!ex)return;
+  const has=item.extras.find(e=>e.id===extraId);
+  if(has)item.extras=item.extras.filter(e=>e.id!==extraId);
+  else item.extras.push(ex);
+  item.subtotal=item.service.price+item.extras.reduce((s,e)=>s+e.price,0);
+  updateCartUI();
+}
+
+function updateCartUI(){
+  const list=document.getElementById('cart-items-list');
+  const cnt=document.getElementById('cart-count');
+  if(!list)return;
+  if(cnt)cnt.textContent=posCart.length+' item'+(posCart.length!==1?'s':'');
+  if(posCart.length===0){
+    list.innerHTML='<div class="empty-state" style="padding:40px 20px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="empty-title">Cart is empty</span></div>';
+  }else{
+    list.innerHTML=posCart.map((item,i)=>`<div class="cart-item">
+      <div class="cart-item-top">
+        <div class="cart-item-name">${item.service.name}</div>
+        <div class="cart-item-price">${fmt(item.subtotal)}</div>
+        <button class="cart-item-remove" onclick="removeFromCart(${i})">${svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
+      </div>
+      ${item.service.extras.length?`<div class="extras-wrap">${item.service.extras.map(ex=>`<button class="extra-btn${item.extras.find(e=>e.id===ex.id)?' selected':''}" onclick="toggleCartExtra(${i},'${ex.id}')">+${ex.name} (${fmt(ex.price)})</button>`).join('')}</div>`:''}
+    </div>`).join('');
+  }
+  updateTotals();
+}
+
+function updateTotals(){
+  const sub=posCart.reduce((s,i)=>s+i.subtotal,0);
+  const dv=parseFloat(document.getElementById('disc-val')?.value||0)||0;posDisc=dv;
+  const da=posDiscType==='percent'?(sub*dv/100):dv;
+  const total=Math.max(0,sub-da);
+  const el=document.getElementById('pos-totals');
+  if(el)el.innerHTML=`<div class="total-row"><span style="color:var(--text2)">Subtotal</span><span>${fmt(sub)}</span></div>${da>0?`<div class="total-row discount"><span>Discount</span><span>-${fmt(da)}</span></div>`:''}<div class="total-row big"><span>Total</span><span>${fmt(total)}</span></div>`;
+  const btn=document.getElementById('charge-btn');
+  const lbl=document.getElementById('charge-label');
+  if(btn)btn.disabled=posCart.length===0;
+  if(lbl)lbl.textContent=posCart.length?'Charge '+fmt(total):'Add items to order';
+}
+
+function setDiscType(t){
+  posDiscType=t;
+  document.getElementById('disc-fixed')?.classList.toggle('active',t==='fixed');
+  document.getElementById('disc-pct')?.classList.toggle('active',t==='percent');
+  updateTotals();
+}
+
+function toggleCustSearch(){
+  posSearchOpen=!posSearchOpen;
+  const dd=document.getElementById('cust-dropdown');
+  if(dd){dd.style.display=posSearchOpen?'block':'none';if(posSearchOpen)document.getElementById('cs-query')?.focus()}
+}
+
+function searchCust(){
+  const q=document.getElementById('cs-query')?.value||'';
+  const res=q.length>=2?Customers.search(q).slice(0,5):[];
+  const el=document.getElementById('cs-results');
+  if(!el)return;
+  el.innerHTML=res.length?res.map(c=>`<div class="cs-result" onclick="selectPosCust('${c.id}')"><div class="cs-avatar">${c.name[0]}</div><div><div style="font-weight:600">${c.name}</div><div style="color:var(--text3);font-size:12px">${c.phone}</div></div></div>`).join(''):(q.length>=2?'<div class="cs-empty">No customers found</div>':'');
+}
+
+function selectPosCust(id){
+  posCust=Customers.byId(id);
+  const lbl=document.getElementById('pos-cust-label');
+  if(lbl){lbl.textContent=posCust.name;lbl.style.color='var(--text)'}
+  const dd=document.getElementById('cust-dropdown');if(dd)dd.style.display='none';
+  posSearchOpen=false;
+}
+
+function clearPosCust(e){e.stopPropagation();posCust=null;const lbl=document.getElementById('pos-cust-label');if(lbl){lbl.textContent='Walk-in / Select customer';lbl.style.color='var(--text3)'}renderPOS()}
+
+function openPayment(){
+  if(!posCart.length)return;
+  const sub=posCart.reduce((s,i)=>s+i.subtotal,0);
+  const dv=posDisc;const da=posDiscType==='percent'?(sub*dv/100):dv;
+  const total=Math.max(0,sub-da);
+  document.getElementById('pay-total-display').textContent=fmt(total);
+  document.getElementById('cash-given').value='';
+  document.getElementById('change-display').style.display='none';
+  selectPayMethod('cash');
+  openModal('pay-modal');
+}
+
+function selectPayMethod(m){
+  posPayMethod=m;
+  document.getElementById('pm-cash').classList.toggle('selected',m==='cash');
+  document.getElementById('pm-card').classList.toggle('selected',m==='card');
+  document.getElementById('cash-section').style.display=m==='cash'?'block':'none';
+}
+
+function setCash(v){
+  document.getElementById('cash-given').value=v;
+  calcChange();
+}
+
+function calcChange(){
+  const total=parseFloat(document.getElementById('pay-total-display').textContent.replace(/[^0-9.]/g,''))||0;
+  const given=parseFloat(document.getElementById('cash-given').value)||0;
+  const cd=document.getElementById('change-display');
+  const ca=document.getElementById('change-amount');
+  if(given>=total&&total>0){
+    cd.style.display='flex';ca.textContent=fmt(given-total);
+  }else{cd.style.display='none'}
+}
+
+function confirmPayment(){
+  const sub=posCart.reduce((s,i)=>s+i.subtotal,0);
+  const dv=posDisc;const da=posDiscType==='percent'?(sub*dv/100):dv;const total=Math.max(0,sub-da);
+  if(posPayMethod==='cash'){
+    const given=parseFloat(document.getElementById('cash-given').value)||0;
+    if(given<total){toast('Insufficient cash amount','error');return}
+  }
+  const items=posCart.map(ci=>({id:DB.id(),orderId:'',serviceId:ci.service.id,serviceName:ci.service.name,servicePrice:ci.service.price,extras:ci.extras.map(e=>({extraId:e.id,name:e.name,price:e.price})),subtotal:ci.subtotal}));
+  const order=Orders.create({customerId:posCust?.id,status:'waiting',items,subtotal:sub,discount:dv,discountType:posDiscType,total,estimatedMinutes:Math.max(...posCart.map(c=>c.service.duration))});
+  Payments.create({orderId:order.id,amount:total,method:posPayMethod,status:'paid',cashGiven:posPayMethod==='cash'?parseFloat(document.getElementById('cash-given').value):undefined,change:posPayMethod==='cash'?Math.max(0,parseFloat(document.getElementById('cash-given').value)-total):undefined});
+  if(posCust)Customers.incVisit(posCust.id,total);
+  closeModal('pay-modal');
+  posCart=[];posCust=null;posDisc=0;
+  renderPOS();
+  toast('Order #'+order.queueNumber+' created — added to queue!','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUEUE
+// ═══════════════════════════════════════════════════════════════
+const NEXT_ST={waiting:'washing',washing:'drying',drying:'ready',ready:'delivered'};
+const NEXT_LABEL={waiting:'Start Wash',washing:'Move to Drying',drying:'Mark Ready',ready:'Mark Delivered'};
+let queueFilter='all';
+
+function renderQueue(){
+  const emps=Users.all().filter(u=>u.role==='employee');
+  const today=Orders.today();
+  const active=Orders.active();
+  const all=[...active,...today.filter(o=>o.status==='delivered'&&!active.find(a=>a.id===o.id))];
+  const display=queueFilter==='all'?all:all.filter(o=>o.status===queueFilter);
+  const counts={all:all.length,waiting:all.filter(o=>o.status==='waiting').length,washing:all.filter(o=>o.status==='washing').length,drying:all.filter(o=>o.status==='drying').length,ready:all.filter(o=>o.status==='ready').length,delivered:all.filter(o=>o.status==='delivered').length};
+
+  document.getElementById('queue-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Live Queue</div><div class="page-sub">${active.length} active orders</div></div>
+      <button class="add-btn" onclick="renderQueue()">${svgIcon('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.24"/>')} Refresh</button></div>
+    <div class="queue-filters">
+      ${['all','waiting','washing','drying','ready','delivered'].map(s=>`<button class="filter-btn${queueFilter===s?' active':''}" onclick="setQueueFilter('${s}')">${s.charAt(0).toUpperCase()+s.slice(1)} (${counts[s]})</button>`).join('')}
+    </div>
+    <div id="queue-list">${display.length===0?`<div class="empty-state">${svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>'+`<polyline points="22 4 12 14.01 9 11.01"/>`)}<span class="empty-title">Queue is clear</span><span class="empty-sub">New orders appear here</span></div>`:display.sort((a,b)=>a.queueNumber-b.queueNumber).map(o=>buildOrderCard(o,emps)).join('')}</div>`;
+}
+
+function buildOrderCard(o,emps){
+  const sts=['waiting','washing','drying','ready','delivered'];
+  const ci=sts.indexOf(o.status);
+  const tl=sts.slice(0,-1).map((s,i)=>`${i>0?`<div class="tl-line${i<=ci?' done':''}"></div>`:''}${i===ci?`<div class="tl-dot current"></div>`:`<div class="tl-dot${i<ci?' done':''}"></div>`}`).join('');
+  const next=NEXT_ST[o.status];
+  return`<div class="order-card">
+    <div class="order-num status-${o.status}">#${o.queueNumber}</div>
+    <div class="order-body">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <span class="status-badge status-${o.status}">${o.status}</span>
+        <span style="font-size:12px;color:var(--text3)">${fmtTime(o.createdAt)}</span>
+      </div>
+      <div class="order-service">${o.items.map(i=>i.serviceName).join(' + ')}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <select class="select-emp" onchange="assignEmp('${o.id}',this.value)">
+          <option value="">Unassigned</option>
+          ${emps.map(e=>`<option value="${e.id}"${o.employeeId===e.id?' selected':''}>${e.name}</option>`).join('')}
+        </select>
+        <span style="font-size:12.5px;font-weight:600;font-family:var(--font-mono)">${fmt(o.total)}</span>
+      </div>
+      <div class="order-timeline">${tl}</div>
+    </div>
+    ${next?`<div class="order-actions"><button class="btn-sm btn-advance" onclick="advanceOrder('${o.id}','${next}')">${NEXT_LABEL[o.status]} →</button></div>`:''}
+  </div>`;
+}
+
+function setQueueFilter(f){queueFilter=f;renderQueue()}
+function advanceOrder(id,st){Orders.setStatus(id,st);renderQueue();toast('Order updated to '+st,'success')}
+function assignEmp(oid,eid){Orders.update(oid,{employeeId:eid||undefined})}
+
+// ═══════════════════════════════════════════════════════════════
+// BOOKINGS
+// ═══════════════════════════════════════════════════════════════
+function renderBookings(){
+  const today=new Date().toISOString().split('T')[0];
+  const all=Bookings.all();
+  const todayBk=all.filter(b=>b.date===today&&b.status!=='cancelled');
+  const upcoming=all.filter(b=>b.date>today&&b.status!=='cancelled');
+  document.getElementById('bookings-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Bookings</div><div class="page-sub">${todayBk.length} today · ${upcoming.length} upcoming</div></div>
+      <button class="add-btn" onclick="openBookingModal()">${svgIcon('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>')} New Booking</button></div>
+    ${todayBk.length?`<div class="section-title">Today</div><div class="bookings-grid">${todayBk.map(b=>bkCard(b)).join('')}</div><div style="height:20px"></div>`:'' }
+    ${upcoming.length?`<div class="section-title">Upcoming</div><div class="bookings-grid">${upcoming.map(b=>bkCard(b)).join('')}</div>`:'' }
+    ${!todayBk.length&&!upcoming.length?`<div class="empty-state">${svgIcon('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>')}<span class="empty-title">No bookings yet</span><span class="empty-sub">Schedule appointments for customers</span></div>`:''}`;
+}
+
+function bkCard(b){
+  const svcs=Services.active();
+  return`<div class="booking-card">
+    <div class="bk-header">
+      <div style="display:flex;align-items:center;gap:10px"><div class="bk-avatar">${b.customerName[0]}</div><div><div class="bk-name">${b.customerName}</div><div class="bk-phone">${b.customerPhone}</div></div></div>
+      <span class="status-badge status-${b.status==='scheduled'?'waiting':b.status==='completed'?'delivered':b.status}">${b.status}</span>
+    </div>
+    <div class="bk-meta">
+      <div class="bk-meta-item">${svgIcon('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>')} ${new Date(b.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+      <div class="bk-meta-item">${svgIcon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')} ${b.time}</div>
+      <div class="bk-meta-item">${svgIcon('<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>')} ${b.vehiclePlate||'—'}</div>
+      <div class="bk-meta-item" style="font-weight:600;color:var(--text)">${b.serviceName} · ${fmt(b.servicePrice)}</div>
+    </div>
+    ${b.status==='scheduled'?`<div class="bk-actions"><button class="btn-sm btn-advance" onclick="bkToQueue('${b.id}')" style="flex:1">Send to Queue →</button><button class="btn-sm btn-outline" onclick="cancelBk('${b.id}')">${svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button></div>`:''}
+  </div>`;
+}
+
+function openBookingModal(){
+  const svcs=Services.active();
+  const sel=document.getElementById('bk-service');
+  if(sel)sel.innerHTML=svcs.map(s=>`<option value="${s.id}">${s.name} · ${fmt(s.price)}</option>`).join('');
+  const di=document.getElementById('bk-date');
+  if(di)di.value=new Date().toISOString().split('T')[0];
+  openModal('booking-modal');
+}
+
+function saveBooking(){
+  const name=document.getElementById('bk-name').value.trim();
+  const phone=document.getElementById('bk-phone').value.trim();
+  const svcId=document.getElementById('bk-service').value;
+  const date=document.getElementById('bk-date').value;
+  const time=document.getElementById('bk-time').value;
+  if(!name||!phone||!svcId||!date){toast('Fill required fields','error');return}
+  const svc=Services.byId(svcId);
+  Bookings.create({customerName:name,customerPhone:phone,vehiclePlate:document.getElementById('bk-plate').value,serviceName:svc.name,servicePrice:svc.price,date,time,notes:document.getElementById('bk-notes').value});
+  closeModal('booking-modal');
+  ['bk-name','bk-phone','bk-plate','bk-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  renderBookings();
+  toast('Booking added!','success');
+}
+
+function bkToQueue(id){
+  const bk=Bookings.all().find(b=>b.id===id);if(!bk)return;
+  const svc=Services.active().find(s=>s.name===bk.serviceName)||Services.active()[0];
+  if(!svc){toast('Service not found','error');return}
+  const order=Orders.create({status:'waiting',items:[{id:DB.id(),orderId:'',serviceId:svc.id,serviceName:svc.name,servicePrice:svc.price,extras:[],subtotal:svc.price}],subtotal:svc.price,discount:0,discountType:'fixed',total:svc.price,notes:'Booking: '+bk.customerName+' - '+bk.vehiclePlate,estimatedMinutes:svc.duration});
+  Bookings.update(id,{status:'completed'});
+  renderBookings();
+  toast('Order #'+order.queueNumber+' added to queue!','success');
+}
+
+function cancelBk(id){Bookings.update(id,{status:'cancelled'});renderBookings();toast('Booking cancelled','info')}
+
+// ═══════════════════════════════════════════════════════════════
+// EMPLOYEE
+// ═══════════════════════════════════════════════════════════════
+let empTab='mine';
+function renderEmployee(){
+  const active=Orders.active();
+  const mine=active.filter(o=>o.employeeId===currentUser.id);
+  const all=active.filter(o=>!['delivered','cancelled'].includes(o.status));
+  const list=empTab==='mine'?mine:all;
+  document.getElementById('emp-inner').innerHTML=`
+    <div style="text-align:center;padding:8px 0 20px">
+      <div style="width:48px;height:48px;background:var(--primary-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-weight:700;font-size:20px;color:var(--primary)">${currentUser.name[0]}</div>
+      <div style="font-weight:600;font-size:16px">${currentUser.name}</div>
+      <div style="font-size:12px;color:var(--text3);text-transform:capitalize">${currentUser.role}</div>
+    </div>
+    <div class="emp-tabs">
+      <button class="emp-tab${empTab==='mine'?' active':''}" onclick="setEmpTab('mine')">My Jobs (${mine.length})</button>
+      <button class="emp-tab${empTab==='all'?' active':''}" onclick="setEmpTab('all')">All Jobs (${all.length})</button>
+    </div>
+    ${list.length===0?`<div class="empty-state">${svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>'+`<polyline points="22 4 12 14.01 9 11.01"/>`)}<span class="empty-title">No jobs right now</span><span class="empty-sub">Pull down to refresh</span></div>`:list.map(o=>empCard(o)).join('')}`;
+}
+
+function empCard(o){
+  const sts=['waiting','washing','drying','ready'];
+  const ci=sts.indexOf(o.status);
+  const tl=sts.map((s,i)=>`${i>0?`<div class="tl-line${i<ci?' done':''}"></div>`:''}${i===ci?`<div class="tl-dot current"></div>`:`<div class="tl-dot${i<ci?' done':''}"></div>`}`).join('');
+  const next=NEXT_ST[o.status];
+  const scs={waiting:'status-waiting',washing:'status-washing',drying:'status-drying',ready:'status-ready',delivered:'status-delivered',cancelled:'status-cancelled'};
+  return`<div class="emp-card">
+    <div class="emp-card-status ${scs[o.status]||''}"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block"></span>${o.status} — Queue #${o.queueNumber}</div>
+    <div class="emp-card-body">
+      <div class="emp-card-service">${o.items.map(i=>i.serviceName).join(' + ')}</div>
+      <div class="emp-card-meta">Est. ${o.estimatedMinutes}m · ${fmt(o.total)}</div>
+      <textarea class="emp-notes" id="emp-note-${o.id}" placeholder="Add notes…">${o.notes||''}</textarea>
+      <div class="order-timeline" style="margin-bottom:12px">${tl}</div>
+      ${next?`<button class="advance-btn" onclick="empAdvance('${o.id}','${next}')">${NEXT_LABEL[o.status]} ${svgIcon('<polyline points="9 18 15 12 9 6"/>')}</button>`:`<div style="text-align:center;font-size:13px;color:var(--text3);padding:8px">${o.status==='delivered'?'✓ Delivered':'Job complete'}</div>`}
+    </div>
+  </div>`;
+}
+
+function setEmpTab(t){empTab=t;renderEmployee()}
+function empAdvance(id,st){
+  const note=document.getElementById('emp-note-'+id)?.value;
+  if(note)Orders.update(id,{notes:note});
+  Orders.setStatus(id,st);renderEmployee();toast('Updated to '+st,'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CUSTOMERS CRM
+// ═══════════════════════════════════════════════════════════════
+let selectedCust=null;
+function renderCRM(){
+  const custs=Customers.all();
+  document.getElementById('crm-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Customers</div><div class="page-sub">${custs.length} total</div></div>
+      <button class="add-btn" onclick="openModal('add-customer-modal')">${svgIcon('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>')} Add Customer</button></div>
+    <div class="crm-layout">
+      <div>
+        <div class="search-bar" style="margin-bottom:12px">${svgIcon('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')}<input id="crm-search" placeholder="Search…" oninput="filterCRM()"/></div>
+        <div class="crm-list" id="crm-list">${custs.map(c=>crmItem(c)).join('')}</div>
+      </div>
+      <div id="crm-detail">${selectedCust?crmDetail(selectedCust):'<div class="empty-state" style="height:300px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="empty-title">Select a customer</span></div>'}</div>
+    </div>`;
+}
+
+function crmItem(c){return`<div class="crm-item${selectedCust?.id===c.id?' active':''}" onclick="selectCustCRM('${c.id}')"><div class="crm-avatar">${c.name[0]}</div><div style="flex:1;min-width:0"><div class="crm-name">${c.name}</div><div class="crm-phone">${c.phone}</div></div><div style="text-align:right;font-size:12px;flex-shrink:0"><div style="font-weight:600">${c.visitCount} visits</div><div style="color:var(--text3)">${fmt(c.totalSpending)}</div></div></div>`}
+
+function selectCustCRM(id){
+  selectedCust=Customers.byId(id);
+  const el=document.getElementById('crm-detail');
+  if(el)el.innerHTML=crmDetail(selectedCust);
+  document.querySelectorAll('.crm-item').forEach(e=>e.classList.toggle('active',e.onclick?.toString().includes(id)));
+}
+
+function crmDetail(c){
+  const vhcls=Vehicles.byCustomer(c.id);
+  const hist=Orders.all().filter(o=>o.customerId===c.id).slice(0,8);
+  return`<div class="crm-detail">
+    <div class="crm-detail-header">
+      <div class="crm-big-avatar">${c.name[0]}</div>
+      <div style="flex:1"><div style="font-size:18px;font-weight:700">${c.name}</div><div style="color:var(--text3);font-size:13px">${c.phone}</div>${c.email?`<div style="color:var(--text3);font-size:12.5px">${c.email}</div>`:''}</div>
+      <button class="svc-act-btn del" onclick="deleteCust('${c.id}')">${svgIcon('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}</button>
+    </div>
+    <div class="crm-detail-stats">
+      <div class="stat-box"><div class="stat-box-val">${c.visitCount}</div><div class="stat-box-lbl">Visits</div></div>
+      <div class="stat-box"><div class="stat-box-val">${fmt(c.totalSpending)}</div><div class="stat-box-lbl">Spent</div></div>
+      <div class="stat-box"><div class="stat-box-val">${vhcls.length}</div><div class="stat-box-lbl">Vehicles</div></div>
+    </div>
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600;font-size:13.5px">Vehicles</span><button class="add-btn" style="height:30px;font-size:12px" onclick="addVehicleForm('${c.id}')">+ Add</button></div>
+    <div id="vhcl-section-${c.id}">
+      ${vhcls.length?vhcls.map(v=>`<div class="vehicle-row"><div class="vehicle-icon-wrap">${svgIcon('<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>')}</div><div style="flex:1"><div style="font-weight:600;font-size:13.5px">${v.plate}</div><div style="color:var(--text3);font-size:12px;text-transform:capitalize">${v.brand||''} ${v.model||''} · ${v.color||''} · ${v.type||''}</div></div></div>`).join(''):'<div style="padding:14px 16px;font-size:13px;color:var(--text3)">No vehicles</div>'}
+    </div>
+    <div id="add-vhcl-form-${c.id}"></div>
+    <div style="padding:14px 16px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)"><span style="font-weight:600;font-size:13.5px">Wash History</span></div>
+    ${hist.length?hist.map(o=>`<div class="history-row"><div class="history-num">#${o.queueNumber}</div><div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.items[0]?.serviceName||'—'}</div><div style="font-size:12px;color:var(--text3)">${fmtDate(o.createdAt)}</div></div><div style="font-weight:600;font-size:13px;font-family:var(--font-mono)">${fmt(o.total)}</div></div>`).join(''):'<div style="padding:14px 16px;font-size:13px;color:var(--text3)">No history</div>'}
+  </div>`;
+}
+
+function addVehicleForm(custId){
+  const el=document.getElementById('add-vhcl-form-'+custId);
+  if(!el)return;
+  el.innerHTML=`<div style="padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input class="form-input" id="vf-plate" placeholder="Plate *" style="height:36px;font-size:13px"/>
+      <input class="form-input" id="vf-brand" placeholder="Brand" style="height:36px;font-size:13px"/>
+      <input class="form-input" id="vf-model" placeholder="Model" style="height:36px;font-size:13px"/>
+      <input class="form-input" id="vf-color" placeholder="Color" style="height:36px;font-size:13px"/>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sm btn-advance" onclick="saveVehicle('${custId}')">Save Vehicle</button>
+      <button class="btn-sm btn-outline" onclick="document.getElementById('add-vhcl-form-${custId}').innerHTML=''">Cancel</button>
+    </div>
+  </div>`;
+}
+
+function saveVehicle(custId){
+  const plate=document.getElementById('vf-plate')?.value.trim();
+  if(!plate){toast('Plate required','error');return}
+  Vehicles.create({customerId:custId,plate,brand:document.getElementById('vf-brand')?.value||'',model:document.getElementById('vf-model')?.value||'',color:document.getElementById('vf-color')?.value||'',type:'sedan'});
+  selectCustCRM(custId);toast('Vehicle added!','success');
+}
+
+function filterCRM(){
+  const q=document.getElementById('crm-search')?.value||'';
+  const custs=q?Customers.search(q):Customers.all();
+  const el=document.getElementById('crm-list');
+  if(el)el.innerHTML=custs.map(c=>crmItem(c)).join('');
+}
+
+function deleteCust(id){if(!confirm('Remove this customer?'))return;Customers.softDelete(id);selectedCust=null;renderCRM();toast('Customer removed','info')}
+
+function saveNewCustomer(){
+  const name=document.getElementById('new-cust-name')?.value.trim();
+  const phone=document.getElementById('new-cust-phone')?.value.trim();
+  if(!name||!phone){toast('Name and phone required','error');return}
+  Customers.create({name,phone,email:document.getElementById('new-cust-email')?.value||'',notes:document.getElementById('new-cust-notes')?.value||''});
+  closeModal('add-customer-modal');
+  ['new-cust-name','new-cust-phone','new-cust-email','new-cust-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  renderCRM();toast('Customer added!','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICES ADMIN
+// ═══════════════════════════════════════════════════════════════
+let svcFormExtras=[];
+function renderServices(){
+  const svcs=Services.all();
+  const catColors={exterior:'var(--blue-bg)',interior:'var(--green-bg)',full:'var(--amber-bg)',specialty:'var(--purple-bg)'};
+  const catTxt={exterior:'var(--blue)',interior:'var(--green)',full:'var(--amber)',specialty:'var(--purple)'};
+  document.getElementById('svc-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Services</div><div class="page-sub">${svcs.filter(s=>s.isActive).length} active</div></div>
+      <button class="add-btn" onclick="openSvcModal(null)">${svgIcon('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>')} Add Service</button></div>
+    <div class="services-admin-grid">${svcs.map(s=>`<div class="svc-admin-card${s.isActive?'':' inactive'}">
+      <div class="svc-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="svc-icon-lg" style="background:${s.color}22">🚗</div>
+          <div><div style="font-weight:700;font-size:14.5px">${s.name}</div><div style="font-size:12px;color:var(--text3)">${fmt(s.price)} · ${s.duration}m</div></div>
+        </div>
+        <div class="svc-actions">
+          <button class="power-btn ${s.isActive?'power-on':'power-off'}" onclick="toggleSvc('${s.id}',${s.isActive})" title="${s.isActive?'Deactivate':'Activate'}">${svgIcon('<path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>')}</button>
+          <button class="svc-act-btn" onclick="openSvcModal('${s.id}')">${svgIcon('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>')}</button>
+          <button class="svc-act-btn del" onclick="deleteSvc('${s.id}')">${svgIcon('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}</button>
+        </div>
+      </div>
+      <p style="font-size:12.5px;color:var(--text3);margin-bottom:10px;line-height:1.5">${s.description}</p>
+      <span class="badge-cat" style="background:${catColors[s.category]||'var(--gray-bg)'};color:${catTxt[s.category]||'var(--gray)'}">${s.category}</span>
+      ${s.extras.length?`<div class="extras-list">${s.extras.map(e=>`<span class="extra-chip">+${e.name} ${fmt(e.price)}</span>`).join('')}</div>`:''}
+    </div>`).join('')}`;
+}
+
+function openSvcModal(id){
+  const s=id?Services.byId(id):null;
+  svcFormExtras=s?JSON.parse(JSON.stringify(s.extras)):[];
+  document.getElementById('svc-modal-title').textContent=s?'Edit Service':'New Service';
+  document.getElementById('svc-edit-id').value=id||'';
+  document.getElementById('svc-name').value=s?.name||'';
+  document.getElementById('svc-price').value=s?.price||'';
+  document.getElementById('svc-duration').value=s?.duration||30;
+  document.getElementById('svc-category').value=s?.category||'exterior';
+  document.getElementById('svc-color').value=s?.color||'#1e40af';
+  document.getElementById('svc-desc').value=s?.description||'';
+  document.getElementById('extra-name').value='';
+  document.getElementById('extra-price').value='';
+  renderExtrasForm();
+  openModal('svc-modal');
+}
+
+function renderExtrasForm(){
+  const el=document.getElementById('extras-form-list');
+  if(!el)return;
+  el.innerHTML=svcFormExtras.map((e,i)=>`<span class="extra-chip" style="display:inline-flex;align-items:center;gap:4px">${e.name} ${fmt(e.price)}<button onclick="removeExtraForm(${i})" style="border:none;background:none;cursor:pointer;color:var(--text3);padding:0;line-height:1">×</button></span>`).join('');
+}
+
+function addExtraToForm(){
+  const n=document.getElementById('extra-name')?.value.trim();
+  const p=parseFloat(document.getElementById('extra-price')?.value)||0;
+  if(!n)return;
+  svcFormExtras.push({id:DB.id(),name:n,price:p});
+  document.getElementById('extra-name').value='';
+  document.getElementById('extra-price').value='';
+  renderExtrasForm();
+}
+
+function removeExtraForm(i){svcFormExtras.splice(i,1);renderExtrasForm()}
+
+function saveService(){
+  const name=document.getElementById('svc-name')?.value.trim();
+  const price=parseFloat(document.getElementById('svc-price')?.value)||0;
+  if(!name||!price){toast('Name and price required','error');return}
+  const d={name,price,duration:parseInt(document.getElementById('svc-duration')?.value)||30,category:document.getElementById('svc-category')?.value||'exterior',color:document.getElementById('svc-color')?.value||'#1e40af',description:document.getElementById('svc-desc')?.value||'',extras:svcFormExtras,isActive:true};
+  const eid=document.getElementById('svc-edit-id')?.value;
+  if(eid)Services.update(eid,d);else Services.create(d);
+  closeModal('svc-modal');renderServices();toast(eid?'Service updated!':'Service created!','success');
+}
+
+function toggleSvc(id,cur){Services.update(id,{isActive:!cur});renderServices();toast('Service '+(cur?'deactivated':'activated'),'info')}
+function deleteSvc(id){if(!confirm('Delete this service?'))return;Services.delete(id);renderServices();toast('Deleted','info')}
+
+// ═══════════════════════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════════════════════
+let rptChart=null;
+function renderReports(){
+  const rev7=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const dp=Payments.forDate(d);rev7.push({lbl:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),rev:dp.reduce((s,p)=>s+p.amount,0),cnt:Orders.forDate(d).length})}
+  const totalRev=rev7.reduce((s,d)=>s+d.rev,0);
+  const totalCnt=rev7.reduce((s,d)=>s+d.cnt,0);
+  const svcMap=new Map();
+  Orders.all().forEach(o=>o.items.forEach(it=>{const e=svcMap.get(it.serviceName)||{cnt:0,rev:0};svcMap.set(it.serviceName,{cnt:e.cnt+1,rev:e.rev+it.subtotal})}));
+  const svcData=[...svcMap.entries()].sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,8);
+  const max=svcData[0]?.[1].cnt||1;
+  document.getElementById('rpt-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Reports</div><div class="page-sub">Last 7 days · All-time services</div></div></div>
+    <div class="export-row">
+      <button class="btn-sm btn-outline" onclick="exportCSV()">${svgIcon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')} Export CSV</button>
+      <button class="btn-sm btn-outline" onclick="exportJSON()">${svgIcon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')} Export JSON</button>
+    </div>
+    <div class="reports-summary">
+      <div class="kpi"><div class="kpi-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="kpi-val">${fmt(totalRev)}</div><div class="kpi-lbl">7-Day Revenue</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#dbeafe"><svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div><div class="kpi-val">${totalCnt}</div><div class="kpi-lbl">Total Orders</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px"><div class="card-title">Daily Revenue</div><div class="card-sub">Last 7 days</div><div class="chart-wrap"><canvas id="rpt-chart"></canvas></div></div>
+    <div class="card"><div class="card-title">Top Services — All Time</div><div class="card-sub">By order count</div>
+      <div style="margin-top:8px">${svcData.length?svcData.map(([n,d],i)=>`<div class="leaderboard-row"><div class="leaderboard-rank">${i+1}</div><div class="ldr-bar-wrap"><div class="ldr-name">${n}</div><div class="ldr-bar"><div class="ldr-bar-fill" style="width:${Math.round(d.cnt/max*100)}%"></div></div></div><div class="ldr-stat">${d.cnt}x · ${fmt(d.rev)}</div></div>`).join(''):'<p style="font-size:13px;color:var(--text3);text-align:center;padding:20px">No data yet</p>'}</div>
+    </div>`;
+  if(rptChart){rptChart.destroy();rptChart=null}
+  const cc=dark?'#94a3b8':'#64748b';const gc=dark?'#334155':'#e2e8f4';
+  const rc=document.getElementById('rpt-chart');
+  if(rc){rptChart=new Chart(rc,{type:'bar',data:{labels:rev7.map(d=>d.lbl),datasets:[{data:rev7.map(d=>d.rev),backgroundColor:'#1e40af',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},scales:{x:{ticks:{color:cc,font:{size:11}},grid:{display:false}},y:{ticks:{color:cc,font:{size:11},callback:v=>'$'+v},grid:{color:gc}}}}})}
+}
+
+function exportCSV(){
+  const rows=[['Date','Revenue','Orders'],...Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);const dp=Payments.forDate(d);return[d.toLocaleDateString(),dp.reduce((s,p)=>s+p.amount,0),Orders.forDate(d).length]})];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=Object.assign(document.createElement('a'),{href:'data:text/csv;charset=utf-8,'+encodeURIComponent(csv),download:'carwash-report-'+new Date().toISOString().split('T')[0]+'.csv'});
+  a.click();toast('Report exported!','success');
+}
+
+function exportJSON(){
+  const data={generatedAt:new Date().toISOString(),orders:Orders.all(),payments:Payments.all(),customers:Customers.all()};
+  const a=Object.assign(document.createElement('a'),{href:'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2)),download:'carwash-data-'+new Date().toISOString().split('T')[0]+'.json'});
+  a.click();toast('Data exported!','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════
+function renderSettings(){
+  const shopName=localStorage.getItem('cw_shop_name')||'CarWash Pro';
+  const shopPhone=localStorage.getItem('cw_shop_phone')||'';
+  document.getElementById('set-inner').innerHTML=`
+    <div class="page-header"><div><div class="page-heading">Settings</div></div></div>
+    <div class="settings-section">
+      <div class="settings-header">${svgIcon('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>')} Shop Information</div>
+      <div class="settings-body">
+        <div class="settings-row"><label class="settings-label">Shop Name</label><input class="form-input" id="set-shop-name" value="${shopName}"/></div>
+        <div class="settings-row"><label class="settings-label">Phone</label><input class="form-input" id="set-shop-phone" value="${shopPhone}" placeholder="+974 1234 5678"/></div>
+        <button class="btn-sm btn-advance" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-header">${svgIcon('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>')} Logged In As</div>
+      <div class="settings-body" style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary)">${currentUser.name[0]}</div>
+        <div><div style="font-weight:600">${currentUser.name}</div><div style="font-size:12.5px;color:var(--text3);text-transform:capitalize">${currentUser.role} · ${currentUser.email}</div></div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-header">${svgIcon('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>')} Data Storage</div>
+      <div class="settings-body">
+        <div class="info-box"><p>Currently using localStorage</p><p>All data lives in this browser. To sync across devices, migrate to Supabase — see /docs/supabase-migration.md</p></div>
+        <div style="margin-top:14px"><button class="danger-btn" onclick="clearAllData()">Clear All Data</button></div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-header">${svgIcon('<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>')} About</div>
+      <div class="settings-body" style="font-size:13.5px;color:var(--text2)">
+        <p>CarWash Pro v1.0.0</p>
+        <p style="margin-top:4px">Single-file PWA · localStorage · Supabase-ready</p>
+        <p style="margin-top:4px;font-size:12px;color:var(--text3)">Deploy: push index.html to GitHub → enable Pages · or drag to Netlify</p>
+      </div>
+    </div>`;
+}
+
+function saveSettings(){
+  localStorage.setItem('cw_shop_name',document.getElementById('set-shop-name')?.value||'CarWash Pro');
+  localStorage.setItem('cw_shop_phone',document.getElementById('set-shop-phone')?.value||'');
+  toast('Settings saved!','success');
+}
+
+function clearAllData(){
+  if(!confirm('Delete ALL data? This cannot be undone.'))return;
+  Object.values(K).forEach(k=>localStorage.removeItem(k));
+  localStorage.removeItem('cw_auth');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function initApp(){
+  if(!currentUser)return;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('sb-role').textContent=currentUser.role;
+  document.getElementById('sb-name').textContent=currentUser.name;
+  document.getElementById('sb-email').textContent=currentUser.email;
+  document.getElementById('sb-avatar').textContent=currentUser.name[0].toUpperCase();
+  buildNav();
+  goTo('dashboard');
+}
+
+// Boot
+seed();
+applyDark();
+loadAuth();
+if(currentUser){
+  initApp();
+}else{
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+// Auto-refresh queue every 15s if on queue/employee page
+setInterval(()=>{if(activePage==='queue')renderQueue();if(activePage==='employee')renderEmployee()},15000);
+</script>
+</body>
+</html>
