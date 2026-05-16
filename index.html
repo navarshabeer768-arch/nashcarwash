@@ -918,8 +918,7 @@ function renderPOS(){
         <div class="cart-items" id="cart-items-list"><div class="empty-state" style="padding:40px 20px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="empty-title">Cart is empty</span><span class="empty-sub">Tap a service to add</span></div></div>
         <div class="cart-footer">
           <div class="discount-row">
-            <svg style="width:16px;height:16px;flex-shrink:0;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-            <input type="number" id="disc-val" min="0" placeholder="Discount" oninput="updateTotals()" style="flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
+            <input type="number" id="disc-val" min="0" placeholder="Discount amount" oninput="updateTotals()" style="flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
             <div class="discount-type"><button id="disc-fixed" class="active" onclick="setDiscType('fixed')">₹</button><button id="disc-pct" onclick="setDiscType('percent')">%</button></div>
           </div>
           <div class="totals" id="pos-totals"></div>
@@ -1089,12 +1088,83 @@ function confirmPayment(){
   }
   const items=posCart.map(ci=>({id:DB.id(),orderId:'',serviceId:ci.service.id,serviceName:ci.service.name,servicePrice:ci.service.price,extras:ci.extras.map(e=>({extraId:e.id,name:e.name,price:e.price})),subtotal:ci.subtotal}));
   const order=Orders.create({customerId:posCust?.id,status:'waiting',items,subtotal:sub,discount:dv,discountType:posDiscType,total,estimatedMinutes:Math.max(...posCart.map(c=>c.service.duration))});
-  Payments.create({orderId:order.id,amount:total,method:posPayMethod,status:'paid',cashGiven:posPayMethod==='cash'?parseFloat(document.getElementById('cash-given').value):undefined,change:posPayMethod==='cash'?Math.max(0,parseFloat(document.getElementById('cash-given').value)-total):undefined});
+  const payment=Payments.create({orderId:order.id,amount:total,method:posPayMethod,status:'paid',cashGiven:posPayMethod==='cash'?parseFloat(document.getElementById('cash-given').value):undefined,change:posPayMethod==='cash'?Math.max(0,parseFloat(document.getElementById('cash-given').value)-total):undefined});
   if(posCust)Customers.incVisit(posCust.id,total);
   closeModal('pay-modal');
+  const savedCart=[...posCart];const savedCust=posCust;
   posCart=[];posCust=null;posDisc=0;
   renderPOS();
-  toast('Order #'+order.queueNumber+' created — added to queue!','success');
+  showInvoice(order,payment,savedCust,savedCart,sub,da,total);
+}
+
+function showInvoice(order,payment,cust,cart,sub,discAmt,total){
+  const shopName=localStorage.getItem('cw_shop_name')||'CarWash Pro';
+  const shopPhone=localStorage.getItem('cw_shop_phone')||'';
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  const timeStr=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  let itemRows='';
+  cart.forEach(ci=>{
+    const extras=ci.extras.length?' <span style="color:#6b7280;font-size:12px">('+ci.extras.map(e=>e.name).join(', ')+')</span>':'';
+    itemRows+='<tr><td style="padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:14px">'+ci.service.name+extras+'</td><td style="padding:8px 0;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-size:14px;font-weight:600">'+fmt(ci.subtotal)+'</td></tr>';
+  });
+  const cashRows=payment.cashGiven?'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#6b7280"><span>Cash Given</span><span style="font-family:monospace">'+fmt(payment.cashGiven)+'</span></div><div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#166534;font-weight:600"><span>Change</span><span style="font-family:monospace">'+fmt(payment.change||0)+'</span></div>':'';
+  const shareText='Invoice '+payment.receiptNumber+'\n'+shopName+'\nQueue: #'+order.queueNumber+'\nTotal: '+fmt(total)+'\nDate: '+dateStr+' '+timeStr+(cust?'\nCustomer: '+cust.name:'');
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>'
+    +'<title>Invoice '+payment.receiptNumber+'</title>'
+    +'<style>@page{size:A4;margin:18mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Segoe UI",Arial,sans-serif;color:#111;background:#fff;padding:36px;max-width:720px;margin:0 auto}'
+    +'.hdr{text-align:center;padding-bottom:24px;margin-bottom:28px;border-bottom:3px solid #1e40af}'
+    +'.hdr h1{font-size:30px;font-weight:800;color:#1e40af;letter-spacing:-0.5px}'
+    +'.hdr p{font-size:13px;color:#6b7280;margin-top:4px}'
+    +'.row2{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}'
+    +'.inv-num{font-size:22px;font-weight:700}.inv-sub{font-size:13px;color:#6b7280;margin-top:3px}'
+    +'.qnum{font-size:52px;font-weight:800;color:#1e40af;font-family:monospace;line-height:1;text-align:right}'
+    +'.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#dcfce7;color:#166534;letter-spacing:0.04em}'
+    +'.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}'
+    +'.meta-box{background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px}'
+    +'.meta-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;margin-bottom:5px}'
+    +'.meta-val{font-size:14px;font-weight:700}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{text-align:left;padding:10px 0;border-bottom:2px solid #1e40af;font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280}'
+    +'th:last-child{text-align:right}'
+    +'.totals-box{background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:16px;margin-bottom:28px}'
+    +'.t-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px}'
+    +'.t-big{font-size:18px;font-weight:800;padding-top:12px;border-top:2px solid #1e40af;margin-top:6px}'
+    +'.footer{text-align:center;padding-top:24px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af}'
+    +'.actions{display:flex;gap:12px;justify-content:center;margin-top:32px}'
+    +'.btn{padding:13px 30px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}'
+    +'.btn-print{background:#1e40af;color:#fff}.btn-share{background:#166534;color:#fff}'
+    +'@media print{.actions{display:none}body{padding:0}}'
+    +'</style></head><body>'
+    +'<div class="hdr"><h1>'+shopName+'</h1><p>'+(shopPhone||'Tax Invoice')+'</p></div>'
+    +'<div class="row2"><div><div class="inv-num">Invoice</div><div class="inv-sub">'+payment.receiptNumber+'</div><div style="margin-top:8px"><span class="badge">PAID · '+payment.method.toUpperCase()+'</span></div></div>'
+    +'<div><div class="qnum">#'+order.queueNumber+'</div><div style="text-align:right;font-size:12px;color:#6b7280;margin-top:4px">Queue Number</div></div></div>'
+    +'<div class="meta"><div class="meta-box"><div class="meta-lbl">Date</div><div class="meta-val">'+dateStr+'</div><div style="font-size:12px;color:#6b7280;margin-top:2px">'+timeStr+'</div></div>'
+    +'<div class="meta-box"><div class="meta-lbl">Customer</div><div class="meta-val">'+(cust?cust.name:'Walk-in')+'</div>'+(cust?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+cust.phone+'</div>':'')+'</div>'
+    +'<div class="meta-box"><div class="meta-lbl">Est. Duration</div><div class="meta-val">'+order.estimatedMinutes+' min</div></div></div>'
+    +'<table><thead><tr><th>Service</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+itemRows+'</tbody></table>'
+    +'<div class="totals-box">'
+    +'<div class="t-row"><span style="color:#6b7280">Subtotal</span><span style="font-family:monospace">'+fmt(sub)+'</span></div>'
+    +(discAmt>0?'<div class="t-row" style="color:#166534"><span>Discount</span><span style="font-family:monospace">-'+fmt(discAmt)+'</span></div>':'')
+    +'<div class="t-row t-big"><span>Total</span><span style="font-family:monospace">'+fmt(total)+'</span></div>'
+    +cashRows+'</div>'
+    +'<div class="footer"><p>Thank you for choosing '+shopName+'!</p><p style="margin-top:4px">This is a computer-generated invoice · No signature required</p></div>'
+    +'<div class="actions">'
+    +'<button class="btn btn-print" onclick="window.print()">🖨&nbsp; Print / Save PDF</button>'
+    +'<button class="btn btn-share" onclick="doShare()">📤&nbsp; Share</button>'
+    +'</div>'
+    +'<script>function doShare(){var t='+JSON.stringify(shareText)+';if(navigator.share){navigator.share({title:"Invoice",text:t}).catch(function(){});}else{navigator.clipboard.writeText(t).then(function(){alert("Copied to clipboard!");});}}<\/script>'
+    +'</body></html>';
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(!win){
+    const a=Object.assign(document.createElement('a'),{href:url,download:'invoice-'+payment.receiptNumber+'.html'});
+    a.click();
+    toast('Invoice saved — open it to print or share','info');
+  } else {
+    toast('Order #'+order.queueNumber+' created! Invoice ready.','success');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1159,12 +1229,12 @@ function renderBookings(){
   const all=Bookings.all();
   const todayBk=all.filter(b=>b.date===today&&b.status!=='cancelled');
   const upcoming=all.filter(b=>b.date>today&&b.status!=='cancelled');
-  document.getElementById('bookings-inner').innerHTML=`
-    <div class="page-header"><div><div class="page-heading">Bookings</div><div class="page-sub">${todayBk.length} today · ${upcoming.length} upcoming</div></div>
-      <button class="add-btn" onclick="openBookingModal()">${svgIcon('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>')} New Booking</button></div>
-    ${todayBk.length?`<div class="section-title">Today</div><div class="bookings-grid">${todayBk.map(b=>bkCard(b)).join('')}</div><div style="height:20px"></div>`:'' }
-    ${upcoming.length?`<div class="section-title">Upcoming</div><div class="bookings-grid">${upcoming.map(b=>bkCard(b)).join('')}</div>`:'' }
-    ${!todayBk.length&&!upcoming.length?`<div class="empty-state">${svgIcon('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>')}<span class="empty-title">No bookings yet</span><span class="empty-sub">Schedule appointments for customers</span></div>`:''}`;
+  const addIcon='<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  let html='<div class="page-header"><div><div class="page-heading">Bookings</div><div class="page-sub">'+todayBk.length+' today · '+upcoming.length+' upcoming</div></div><button class="add-btn" onclick="openBookingModal()">'+addIcon+' New Booking</button></div>';
+  if(todayBk.length){html+='<div class="section-title">Today</div><div class="bookings-grid">'+todayBk.map(b=>bkCard(b)).join('')+'</div><div style="height:20px"></div>';}
+  if(upcoming.length){html+='<div class="section-title">Upcoming</div><div class="bookings-grid">'+upcoming.map(b=>bkCard(b)).join('')+'</div>';}
+  if(!todayBk.length&&!upcoming.length){html+='<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="empty-title">No bookings yet</span><span class="empty-sub">Schedule appointments for customers</span></div>';}
+  document.getElementById('bookings-inner').innerHTML=html;
 }
 
 function bkCard(b){
@@ -1175,7 +1245,7 @@ function bkCard(b){
       <span class="status-badge status-${b.status==='scheduled'?'waiting':b.status==='completed'?'delivered':b.status}">${b.status}</span>
     </div>
     <div class="bk-meta">
-      <div class="bk-meta-item">${svgIcon('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>')} ${new Date(b.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+      <div class="bk-meta-item"><svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${new Date(b.date).toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric'})}</div>
       <div class="bk-meta-item">${svgIcon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')} ${b.time}</div>
       <div class="bk-meta-item">${svgIcon('<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3m-4 12H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2zm0-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>')} ${b.vehiclePlate||'—'}</div>
       <div class="bk-meta-item" style="font-weight:600;color:var(--text)">${b.serviceName} · ${fmt(b.servicePrice)}</div>
