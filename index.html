@@ -216,7 +216,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15
 .extra-btn{padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;cursor:pointer;font-family:var(--font);transition:all var(--transition)}
 .extra-btn.selected{background:var(--primary);border-color:var(--primary);color:#fff}
 .cart-footer{border-top:1px solid var(--border);padding:16px}
-.discount-row{display:flex;gap:6px;margin-bottom:12px}
+.discount-row{display:flex;gap:6px;margin-bottom:12px;align-items:center}
 .discount-row input{flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
 .discount-row input:focus{border-color:var(--primary)}
 .discount-type{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
@@ -526,9 +526,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15
     <div id="cash-section">
       <input class="form-input" type="number" id="cash-given" placeholder="Amount given by customer" oninput="calcChange()" style="margin-bottom:8px"/>
       <div class="cash-presets">
-        <button class="cash-preset" onclick="setCash(20)">$20</button>
-        <button class="cash-preset" onclick="setCash(50)">$50</button>
-        <button class="cash-preset" onclick="setCash(100)">$100</button>
+        <button class="cash-preset" onclick="setCash(200)">₹200</button>
+        <button class="cash-preset" onclick="setCash(500)">₹500</button>
+        <button class="cash-preset" onclick="setCash(1000)">₹1000</button>
       </div>
       <div class="change-display" id="change-display" style="display:none">
         <span>Change:</span><span id="change-amount" style="font-family:var(--font-mono)">$0</span>
@@ -719,17 +719,17 @@ function seed(){
     {id:uid(),name:'Employee One',email:'employee@carwash.com',role:'employee',phone:'+97412345680',isActive:true,createdAt:n(),updatedAt:n()},
   ]);
   const svcs=[
-    {name:'Basic Wash',desc:'Exterior wash with rinse and dry',price:15,dur:20,cat:'exterior',color:'#1e40af',extras:[{id:uid(),name:'Tire Shine',price:3},{id:uid(),name:'Air Freshener',price:2}]},
-    {name:'VIP Wash',desc:'Full exterior + hand dry + windows',price:30,dur:35,cat:'exterior',color:'#6d28d9',extras:[{id:uid(),name:'Rain Repellent',price:5}]},
-    {name:'Interior Clean',desc:'Full vacuum, wipe-down, windows',price:40,dur:45,cat:'interior',color:'#166534',extras:[{id:uid(),name:'Seat Shampoo',price:15}]},
-    {name:'Full Detail',desc:'Complete interior + exterior',price:80,dur:90,cat:'full',color:'#92400e',extras:[{id:uid(),name:'Ceramic Coat',price:50}]},
-    {name:'Steam Wash',desc:'Deep steam cleaning, sanitizes',price:55,dur:60,cat:'specialty',color:'#0e7490',extras:[]},
-    {name:'Wax & Polish',desc:'Hand wax and machine polish',price:65,dur:75,cat:'specialty',color:'#991b1b',extras:[]},
+    {name:'Basic Wash',desc:'Exterior wash with rinse and dry',price:199,dur:20,cat:'exterior',color:'#1e40af',extras:[{id:uid(),name:'Tyre Shine',price:49},{id:uid(),name:'Air Freshener',price:29}]},
+    {name:'VIP Wash',desc:'Full exterior + hand dry + windows',price:399,dur:35,cat:'exterior',color:'#6d28d9',extras:[{id:uid(),name:'Rain Repellent',price:99}]},
+    {name:'Interior Clean',desc:'Full vacuum, wipe-down, windows',price:599,dur:45,cat:'interior',color:'#166534',extras:[{id:uid(),name:'Seat Shampoo',price:199}]},
+    {name:'Full Detail',desc:'Complete interior + exterior',price:999,dur:90,cat:'full',color:'#92400e',extras:[{id:uid(),name:'Ceramic Coat',price:499}]},
+    {name:'Steam Wash',desc:'Deep steam cleaning, sanitizes',price:699,dur:60,cat:'specialty',color:'#0e7490',extras:[]},
+    {name:'Wax & Polish',desc:'Hand wax and machine polish',price:799,dur:75,cat:'specialty',color:'#991b1b',extras:[]},
   ];
   DB.set(K.SVC,svcs.map(s=>({id:uid(),name:s.name,description:s.desc,price:s.price,duration:s.dur,category:s.cat,isActive:true,extras:s.extras,color:s.color,createdAt:n(),updatedAt:n()})));
   const custs=[
-    {id:uid(),name:'Ahmed Al-Rashid',phone:'+97412345678',email:'ahmed@example.com',notes:'',visitCount:12,totalSpending:480,favoriteServices:[],createdAt:n(),updatedAt:n()},
-    {id:uid(),name:'Sarah Johnson',phone:'+97487654321',email:'sarah@example.com',notes:'',visitCount:5,totalSpending:200,favoriteServices:[],createdAt:n(),updatedAt:n()},
+    {id:uid(),name:'Rahul Menon',phone:'+919847123456',email:'rahul@example.com',notes:'',visitCount:12,totalSpending:5400,favoriteServices:[],createdAt:n(),updatedAt:n()},
+    {id:uid(),name:'Priya Nair',phone:'+919947654321',email:'priya@example.com',notes:'',visitCount:5,totalSpending:2000,favoriteServices:[],createdAt:n(),updatedAt:n()},
   ];
   DB.set(K.CUST,custs);
   localStorage.setItem(K.SEEDED,'1');
@@ -820,7 +820,7 @@ function closeModal(id){const m=document.getElementById(id);m.style.opacity='0';
 window.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>{m.style.opacity='0';setTimeout(()=>m.classList.remove('open'),200)})});
 
 // ─── FORMAT ─────────────────────────────────────────────────────
-function fmt(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0}).format(n)}
+function fmt(n){return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:0}).format(n)}
 function fmtDate(s){return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 function fmtTime(s){return new Date(s).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function fmtTrend(n){const pos=n>=0;return`<span class="${pos?'trend-up':'trend-dn'}">${pos?'↑':'↓'}${Math.abs(n)}%</span>`}
@@ -918,9 +918,9 @@ function renderPOS(){
         <div class="cart-items" id="cart-items-list"><div class="empty-state" style="padding:40px 20px"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="empty-title">Cart is empty</span><span class="empty-sub">Tap a service to add</span></div></div>
         <div class="cart-footer">
           <div class="discount-row">
-            ${svgIcon('<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>')}
+            <svg style="width:16px;height:16px;flex-shrink:0;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
             <input type="number" id="disc-val" min="0" placeholder="Discount" oninput="updateTotals()" style="flex:1;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;outline:none"/>
-            <div class="discount-type"><button id="disc-fixed" class="active" onclick="setDiscType('fixed')">$</button><button id="disc-pct" onclick="setDiscType('percent')">%</button></div>
+            <div class="discount-type"><button id="disc-fixed" class="active" onclick="setDiscType('fixed')">₹</button><button id="disc-pct" onclick="setDiscType('percent')">%</button></div>
           </div>
           <div class="totals" id="pos-totals"></div>
           <button class="charge-btn" id="charge-btn" onclick="openPayment()" disabled>
@@ -1018,7 +1018,13 @@ function setDiscType(t){
 function toggleCustSearch(){
   posSearchOpen=!posSearchOpen;
   const dd=document.getElementById('cust-dropdown');
-  if(dd){dd.style.display=posSearchOpen?'block':'none';if(posSearchOpen)document.getElementById('cs-query')?.focus()}
+  if(dd){
+    dd.style.display=posSearchOpen?'block':'none';
+    if(posSearchOpen){
+      document.getElementById('cs-query')?.focus();
+      searchCust(); // show Add button immediately
+    }
+  }
 }
 
 function searchCust(){
@@ -1026,7 +1032,8 @@ function searchCust(){
   const res=q.length>=2?Customers.search(q).slice(0,5):[];
   const el=document.getElementById('cs-results');
   if(!el)return;
-  el.innerHTML=res.length?res.map(c=>`<div class="cs-result" onclick="selectPosCust('${c.id}')"><div class="cs-avatar">${c.name[0]}</div><div><div style="font-weight:600">${c.name}</div><div style="color:var(--text3);font-size:12px">${c.phone}</div></div></div>`).join(''):(q.length>=2?'<div class="cs-empty">No customers found</div>':'');
+  const addBtn=`<div style="border-top:1px solid var(--border);padding:8px 12px"><button onclick="openQuickAddCustomer()" style="width:100%;height:34px;background:var(--primary-light);border:1px dashed var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add New Customer</button></div>`;
+  el.innerHTML=(res.length?res.map(c=>`<div class="cs-result" onclick="selectPosCust('${c.id}')"><div class="cs-avatar">${c.name[0]}</div><div><div style="font-weight:600">${c.name}</div><div style="color:var(--text3);font-size:12px">${c.phone}</div></div></div>`).join(''):(q.length>=2?'<div class="cs-empty">No customers found</div>':''))+addBtn;
 }
 
 function selectPosCust(id){
@@ -1111,7 +1118,7 @@ function renderQueue(){
     <div class="queue-filters">
       ${['all','waiting','washing','drying','ready','delivered'].map(s=>`<button class="filter-btn${queueFilter===s?' active':''}" onclick="setQueueFilter('${s}')">${s.charAt(0).toUpperCase()+s.slice(1)} (${counts[s]})</button>`).join('')}
     </div>
-    <div id="queue-list">${display.length===0?`<div class="empty-state">${svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>'+`<polyline points="22 4 12 14.01 9 11.01"/>`)}<span class="empty-title">Queue is clear</span><span class="empty-sub">New orders appear here</span></div>`:display.sort((a,b)=>a.queueNumber-b.queueNumber).map(o=>buildOrderCard(o,emps)).join('')}</div>`;
+    <div id="queue-list">${display.length===0?`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="empty-title">Queue is clear</span><span class="empty-sub">New orders appear here</span></div>`:display.sort((a,b)=>a.queueNumber-b.queueNumber).map(o=>buildOrderCard(o,emps)).join('')}</div>`;
 }
 
 function buildOrderCard(o,emps){
@@ -1232,7 +1239,7 @@ function renderEmployee(){
       <button class="emp-tab${empTab==='mine'?' active':''}" onclick="setEmpTab('mine')">My Jobs (${mine.length})</button>
       <button class="emp-tab${empTab==='all'?' active':''}" onclick="setEmpTab('all')">All Jobs (${all.length})</button>
     </div>
-    ${list.length===0?`<div class="empty-state">${svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>'+`<polyline points="22 4 12 14.01 9 11.01"/>`)}<span class="empty-title">No jobs right now</span><span class="empty-sub">Pull down to refresh</span></div>`:list.map(o=>empCard(o)).join('')}`;
+    ${list.length===0?`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="empty-title">No jobs right now</span><span class="empty-sub">Check back soon</span></div>`:list.map(o=>empCard(o)).join('')}`;
 }
 
 function empCard(o){
@@ -1344,14 +1351,38 @@ function filterCRM(){
 
 function deleteCust(id){if(!confirm('Remove this customer?'))return;Customers.softDelete(id);selectedCust=null;renderCRM();toast('Customer removed','info')}
 
+function openQuickAddCustomer(){
+  // Close the search dropdown
+  const dd=document.getElementById('cust-dropdown');if(dd)dd.style.display='none';
+  posSearchOpen=false;
+  // Pre-fill name from search query if any
+  const q=document.getElementById('cs-query')?.value||'';
+  ['new-cust-name','new-cust-phone','new-cust-email','new-cust-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  if(q&&isNaN(q)){document.getElementById('new-cust-name').value=q}
+  else if(q){document.getElementById('new-cust-phone').value=q}
+  // Override save to return to POS with new customer selected
+  window._posQuickAdd=true;
+  openModal('add-customer-modal');
+}
+
 function saveNewCustomer(){
   const name=document.getElementById('new-cust-name')?.value.trim();
   const phone=document.getElementById('new-cust-phone')?.value.trim();
   if(!name||!phone){toast('Name and phone required','error');return}
-  Customers.create({name,phone,email:document.getElementById('new-cust-email')?.value||'',notes:document.getElementById('new-cust-notes')?.value||''});
+  const c=Customers.create({name,phone,email:document.getElementById('new-cust-email')?.value||'',notes:document.getElementById('new-cust-notes')?.value||''});
   closeModal('add-customer-modal');
   ['new-cust-name','new-cust-phone','new-cust-email','new-cust-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  renderCRM();toast('Customer added!','success');
+  // If called from POS quick-add, select this customer in POS
+  if(window._posQuickAdd){
+    window._posQuickAdd=false;
+    posCust=c;
+    const lbl=document.getElementById('pos-cust-label');
+    if(lbl){lbl.textContent=c.name;lbl.style.color='var(--text)'}
+    toast('Customer added and selected!','success');
+  }else{
+    renderCRM();
+    toast('Customer added!','success');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
